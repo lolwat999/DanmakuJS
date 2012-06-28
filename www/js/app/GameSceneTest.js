@@ -11,11 +11,13 @@ var GameSceneTest = GameScene.extend({
     },
     
     addBox: function() {
-        var angle = this.angle;
+        var angle = this.angle, container = this.core.container;
+        var width = container.width(),
+            height = container.height();
         var box = new Bullet({
-            angle: angle,
-            life: 500,
-            speed: 2
+            x: width / 2, y: height / 2,
+            angle: angle, life: 500, speed: 3,
+            image: "bullets/arrow.png"
         });
         this.angle = (this.angle + 16) % 360;
         this.boxes.push(box);
@@ -26,7 +28,9 @@ var GameSceneTest = GameScene.extend({
         var scene = this.scene;
         var boxes = this.boxes;
         var deleteList = [];
-        this.addBox();
+        for (var i=0; i<2; ++i) {
+            this.addBox();
+        }
         boxes.forEach(function(box) {
             box.update(delta);
             if (!box.alive) {
@@ -34,7 +38,6 @@ var GameSceneTest = GameScene.extend({
             }
         });
         deleteList.forEach(function(box) {
-            scene.remove(box.model);
             boxes.splice(boxes.indexOf(box), 1);
         });
         //this.camera.position.y -= delta * 50;

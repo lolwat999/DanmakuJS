@@ -3,6 +3,16 @@ define(function(require) {
 var THREE = require('lib/Three');
 var geometry = new THREE.CubeGeometry( 10, 10, 10 );
 
+var ImageMapCache = {
+    images: {},
+    
+    load: function(file) {
+        this.images[file] = this.images[file] || 
+            THREE.ImageUtils.loadTexture(file);
+        return this.images[file];
+    }
+};
+
 var Sprite = Class.extend({
     init: function(options) {
         options = options || {};
@@ -12,10 +22,12 @@ var Sprite = Class.extend({
         this.ySpeed = 0;
         this.x = options.x || 0;
         this.y = options.y || 0;
-        var material = new THREE.MeshBasicMaterial({ 
-            color: parseInt(Math.random() * 16777216), shading: THREE.FlatShading, overdraw: true 
+        this.image = options.image;
+        var map = ImageMapCache.load("img/" + this.image);
+        this.model = options.model || new THREE.Sprite({
+            color: parseInt(Math.random() * 16777216),
+            map: map
         });
-        this.model = options.model || new THREE.Mesh( geometry, material );
         this.alive = true;
     },
     
@@ -27,7 +39,10 @@ var Sprite = Class.extend({
         this.y += this.ySpeed * delta * 50;
         this.model.position.x = this.x;
         this.model.position.y = this.y;
-        this.model.rotation.z = this.angle;
+        this.model.rotation = (Math.PI * 2) - radianAngle;
+        if (!this.alive && this.model && this.model.parent) {
+            this.model.parent.remove(this.model);
+        }
     }
 });
 

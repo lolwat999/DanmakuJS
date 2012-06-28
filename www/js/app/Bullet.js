@@ -8,15 +8,15 @@ var Bullet = Sprite.extend({
         this._super(options);
         this.life = options.life || 100;
         this.time = 0;
-        this.model.material.blending = THREE.AdditiveBlending;
+        this.model.blending = THREE.AdditiveBlending;
     },
     
     dying: function() {
-        var opacity = this.model.material.opacity - 0.01;
+        var opacity = this.model.opacity - 0.01;
         if (opacity < 0) {
             this.alive = false;
         }
-        this.model.material.opacity = opacity < 0 ? 0 : opacity;
+        this.model.opacity = opacity < 0 ? 0 : opacity;
     },
     
     update: function(delta) {
