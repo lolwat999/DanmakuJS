@@ -1,0 +1,1 @@
+requirejs.config({baseUrl:"js/app",paths:{lib:"../lib"}}),define("app",[],function(){})

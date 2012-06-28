@@ -1,0 +1,1 @@
+define(["require"],function(a){var b=Class.extend({init:function(){this.states=[]},add:function(a){this.states.push(a),a.onActivate()},remove:function(){var a=this.states.pop();a.onDeactivate()},toEntryPoint:function(){while(this.states.length>1)this.remove()},current:function(){return this.states[this.states.length-1]}});return b})
