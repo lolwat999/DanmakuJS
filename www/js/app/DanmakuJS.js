@@ -1,5 +1,8 @@
 define(function (require) {
 
+require('lib/game-shim')
+require('lib/inheritance');
+require('lib/jquery-1.8b1');
 var Stats = require('lib/Stats');
 var THREE = require('lib/Three');
 var GameSceneTest = require('GameSceneTest');

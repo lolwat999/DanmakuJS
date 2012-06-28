@@ -6,10 +6,6 @@
 requirejs.config({
     baseUrl: 'js/app',
     paths: {
-        lib: '../lib'
+        lib: '../lib',
     }
 });
-
-// Start loading the main app file. Put all of
-// your application logic in there.
-requirejs(['lib/game-shim', 'lib/jquery-1.8b1', 'lib/inheritance' ]);
