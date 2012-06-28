@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="css/stylesheet.css" rel="stylesheet" type="text/css"></link>
+        <script data-main="js/app" src="js/lib/require.js"></script>
+    </head>
+    <script>
+    require([ 'app/DanmakuJS' ], function(DanmakuJS) {
+        var danmakuJS = new DanmakuJS({
+            container: '#container'
+        });
+        danmakuJS.start();
+    });
+    </script>
+    <body>
+        <div id='container'></div>
+    </body>
+</html>
