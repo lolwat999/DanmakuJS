@@ -46,17 +46,24 @@ var GameState = Class.extend({
     },
 
     add: function(entity) {
-        entity.parent = this;
+        entity.state = this;
         this.entities.push(entity);
     },
 
     remove: function(entity) {
-        entity.parent = null;
+        entity.state = null;
         this.entities.splice(this.entities.indexOf(entity), 1);
     },
 
     clear: function() {
         this.entities = [];
+    },
+
+    getSize: function() {
+        var container = this.core.container,
+            width = container.width(),
+            height = container.height();
+        return { width: width, height: height };
     },
     
     onResized: function(width, height) { },
