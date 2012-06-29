@@ -40,9 +40,6 @@ var Sprite = Class.extend({
         this.model.position.x = this.x;
         this.model.position.y = this.y;
         this.model.rotation = (Math.PI * 2) - radianAngle;
-        if (!this.alive && this.model && this.model.parent) {
-            this.model.parent.remove(this.model);
-        }
     }
 });
 

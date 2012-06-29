@@ -19,6 +19,20 @@ var GameScene = GameState.extend({
         directionalLight.position.normalize();
         this.scene.add( directionalLight );
     },
+
+    add: function(entity) {
+        this._super(entity);
+        if (entity.model) {
+            this.scene.add(entity.model);
+        }
+    },
+
+    remove: function(entity) {
+        this._super(entity);
+        if (entity.model) {
+            this.scene.remove(entity.model);
+        }
+    },
     
     render: function(renderer) {
         renderer.render( this.scene, this.camera );

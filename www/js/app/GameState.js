@@ -5,6 +5,20 @@ var GameState = Class.extend({
         this.core = core;
         this.background = background || null;
         this.foreground = foreground || null;
+        this.entities = [];
+    },
+
+    update: function(delta) {
+        var entity, entities = this.entities;
+        for (var i=0, iMax = entities.length; i<iMax; ++i) {
+            entity = entities[i];
+            entity.update(delta);
+            if (!entity.alive) {
+                this.remove(entity);
+                iMax = entities.length;
+                --i;
+            }
+        }
     },
     
     updateAll: function(delta) {
@@ -29,6 +43,20 @@ var GameState = Class.extend({
         if (this.foreground) {
             this.foreground.renderAll(renderer);
         }
+    },
+
+    add: function(entity) {
+        entity.parent = this;
+        this.entities.push(entity);
+    },
+
+    remove: function(entity) {
+        entity.parent = null;
+        this.entities.splice(this.entities.indexOf(entity), 1);
+    },
+
+    clear: function() {
+        this.entities = [];
     },
     
     onResized: function(width, height) { },

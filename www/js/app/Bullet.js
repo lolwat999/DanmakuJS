@@ -21,7 +21,7 @@ var Bullet = Sprite.extend({
     
     update: function(delta) {
         if (this.alive) {
-            ++this.time;
+            this.time += delta / 0.016666;
             if (this.time > this.life) {
                 this.dying();
             }

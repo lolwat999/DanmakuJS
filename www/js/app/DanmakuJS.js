@@ -8,17 +8,17 @@ var THREE = require('lib/Three');
 var GameSceneTest = require('GameSceneTest');
 var GameStateManager = require('GameStateManager');
 
-var DanmakuJS = function(options) {
-    options = options || {};
+var DanmakuJS = function() {
     var that = this;
-    this.container = $((options.container || document.body));
     this.stats = new Stats();
     this.timer = new THREE.Clock();
     this.scaleX = 1;
     this.scaleY = 1;
     this.gameStateManager = new GameStateManager();
     
-    this.start = function() {
+    this.start = function(options) {
+        options = options || {};
+        this.container = $((options.container || document.body));
         var width = that.container.width(), 
             height = that.container.height();
         that.container.html(' ');
@@ -56,6 +56,6 @@ var DanmakuJS = function(options) {
     };
 };
 
-return DanmakuJS;
+return new DanmakuJS();
     
 });
