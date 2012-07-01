@@ -66,8 +66,6 @@ var GameState = Class.extend({
         return { width: width, height: height };
     },
     
-    onResized: function(width, height) { },
-    
     onActivate: function() { },
     
     onDeactivate: function() { }

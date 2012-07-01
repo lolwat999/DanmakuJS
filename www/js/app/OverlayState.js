@@ -2,19 +2,20 @@ define(function(require) {
 
 var THREE = require('lib/Three');
 var GameState = require('./GameState');
+var Entity = require('./Entity');
 
-var GameScene = GameState.extend({
+var OverlayState = GameState.extend({
     init: function(core, background, foreground, camera, scene) {
         this._super(core, background, foreground);
         var width = this.core.container.width(), 
             height = this.core.container.height();
         this.scene = scene || new THREE.Scene();
         this.camera = camera ||  new THREE.PerspectiveCamera(60, width / height, 1, 5000);
-        this.camera.position.z = 1300;
+        this.camera.position.z = 640;
         this.scene.add( this.camera );
-        this.gameArea = { x: 0, y: 0, width: 970, height: 1485 };
-        this.camera.position.x = 225 + this.gameArea.x + this.gameArea.width / 2;
-        this.camera.position.y = this.gameArea.y + this.gameArea.height / 2 - 30;
+        this.add(new Entity({
+            image: 'frame.png'
+        }));
     },
 
     add: function(entity) {
@@ -32,13 +33,9 @@ var GameScene = GameState.extend({
     },
     
     render: function(renderer) {
-        for (var i=0, iMax = this.entities.length; i<iMax; ++i) {
-            var entity = this.entities[i];
-            if (entity.model) {
-                entity.model.visible = !entity.outOfBounds();
-            }
-        }
+        renderer.autoClear = false;
         renderer.render( this.scene, this.camera );
+        renderer.autoClear = true;
     },
     
     onResized: function(width, height) {
@@ -47,6 +44,6 @@ var GameScene = GameState.extend({
     }
 });
 
-return GameScene;
+return OverlayState;
 
 });

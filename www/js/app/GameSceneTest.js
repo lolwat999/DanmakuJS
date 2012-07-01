@@ -2,19 +2,27 @@ define(function(require) {
 
 var GameScene = require('./GameScene');
 var Bullet = require('./Bullet');
+var Player = require('./Player');
 var Tasks = require('./Tasks');
+var OverlayState = require('./OverlayState');
 
 var GameSceneTest = GameScene.extend({
     init: function(core, background, foreground) {
         var that = this;
         this._super(core, background, foreground);
         this.angle = 0;
+        this.add(new Player({
+            x: that.gameArea.width / 2, y: 100,
+            image: 'characters/marisa.png',
+            scale: 2
+        }))
         this.add(new Tasks({ tasks: [ that.tasks.addCircle ] }));
+        this.foreground = new OverlayState(core);
     },
 
     tasks: {
         addCircle: function(delta, owner, state) {
-            var size = state.getSize();
+            var area = state.gameArea;
             state.entities.forEach(function(entity) {
                 if (entity instanceof Bullet) {
                     entity.angle++;
@@ -23,9 +31,9 @@ var GameSceneTest = GameScene.extend({
             for (var i=0; i<2; ++i) {
                 var angle = this.angle || 0;
                 state.add(new Bullet({
-                    x: size.width / 2, y: size.height / 2,
+                    x: area.width / 2, y: area.height / 2,
                     angle: angle, life: 250,
-                    image: "bullets/arrow.png",
+                    image: 'bullets/arrow.png',
                     color: Math.floor(Math.random() * 16777216)
                 }));
                 this.angle = (angle + 16) % 360;
@@ -38,12 +46,12 @@ var GameSceneTest = GameScene.extend({
 
         addBullet: function(delta, owner, state) {
             if (Date.now() % 8 === 0) {
-                var size = state.getSize();
+                var area = state.gameArea;
                 state.add(new Bullet({
-                    x: size.width / 2, y: size.height / 2,
-                    angle: Math.random() * 360, life: 50,
+                    x: area.width / 2, y: area.height / 2,
+                    angle: Math.random() * 360, life: 150,
                     speed: 3 + Math.random() * 10,
-                    image: "bullets/arrow.png",
+                    image: 'bullets/arrow.png',
                     tasks: [ state.tasks.arrowTask ]
                 }));
             }

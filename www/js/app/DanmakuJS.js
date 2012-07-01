@@ -3,10 +3,12 @@ define(function (require) {
 require('lib/game-shim')
 require('lib/inheritance');
 require('lib/jquery-1.8b1');
+var _ = require('lib/underscore-min');
 var Stats = require('lib/Stats');
 var THREE = require('lib/Three');
 var GameSceneTest = require('GameSceneTest');
 var GameStateManager = require('GameStateManager');
+var Input = require('Input');
 
 var DanmakuJS = function() {
     var that = this;
@@ -23,14 +25,23 @@ var DanmakuJS = function() {
             height = that.container.height();
         that.container.html(' ');
         that.renderer = new THREE.WebGLRenderer();
-        that.renderer.setSize( width, height );
-        $(that.stats.domElement).addClass('overlay');
-        that.container.append( that.stats.domElement );
-        that.container.append( that.renderer.domElement );
+        that.renderer.setSize(width, height);
+        that.container.append(that.renderer.domElement);
+        Input.bind(that.container[0]);
         that.gameStateManager.add(new GameSceneTest(that));
         window.addEventListener('resize', this.onResized, false);
+        that.setDebug(options.debug);
         that.mainLoop();
     };
+
+    this.setDebug = function(debug) {
+        if (debug) {
+            $(that.stats.domElement).addClass('overlay');
+            that.container.append(that.stats.domElement);
+        } else {
+            $(that.stats.domElement).remove();
+        }
+    },
     
     this.mainLoop = function() {
         that.stats.begin();
@@ -49,13 +60,13 @@ var DanmakuJS = function() {
     this.onResized = function() {
         var width = that.container.width() * that.scaleX, 
             height = that.container.height() * that.scaleY;
-        that.gameStateManager.states.forEach(function(state) {
-            state.onResized(width, height);
-        });
-        that.renderer.setSize( width, height );
+        that.renderer.setSize(width, height);
+        that.gameStateManager.onResized(width, height);
     };
 };
 
-return new DanmakuJS();
+this.DanmakuJS = new DanmakuJS();
+
+return this.DanmakuJS;
     
 });

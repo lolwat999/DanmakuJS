@@ -41,7 +41,7 @@ var Tasks = Class.extend({
     },
     
     update: function(delta, parent) {
-        if (this.alive) {
+        if (this.alive && (!parent || parent.alive)) {
             var timeIncrement = delta / 0.016666;
             var tasks = this._tasks;
             if (tasks && tasks.length) {

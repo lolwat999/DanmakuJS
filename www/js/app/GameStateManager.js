@@ -23,6 +23,14 @@ var GameStateManager = Class.extend({
     
     current: function() {
         return this.states[this.states.length - 1];
+    },
+
+    onResized: function(width, height) {
+        this.states.forEach(function(state) {
+            if (state.onResized) {
+                state.onResized(width, height);
+            }
+        });
     }
 });
 
