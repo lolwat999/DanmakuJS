@@ -6,6 +6,7 @@ var GameState = Class.extend({
         this.background = background || null;
         this.foreground = foreground || null;
         this.entities = [];
+        this.paused = false;
     },
 
     update: function(delta) {
@@ -25,7 +26,7 @@ var GameState = Class.extend({
         if (this.background) {
             this.background.updateAll(delta);
         }
-        if (this.update) {
+        if (this.update && !this.paused) {
             this.update(delta);
         }
         if (this.foreground) {

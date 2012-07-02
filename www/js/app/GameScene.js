@@ -2,6 +2,7 @@ define(function(require) {
 
 var THREE = require('lib/Three');
 var GameState = require('./GameState');
+var Entity = require('./Entity');
 
 var GameScene = GameState.extend({
     init: function(core, background, foreground, camera, scene) {
@@ -21,6 +22,24 @@ var GameScene = GameState.extend({
         this._super(entity);
         if (entity.model) {
             this.scene.add(entity.model);
+        }
+    },
+
+    update: function(delta) {
+        this._super(delta);
+        var entities = this.entities;
+        for (var i=0, iMax = entities.length; i<iMax; ++i) {
+            var e = entities[i];
+            var constructor = e.constructor;
+            if (constructor) {
+                for (var j=i; j<iMax; ++j) {
+                    var e2 = entities[j];
+                    if (!(e2 instanceof constructor) && e.collides && e.collides(e2)) {
+                        e.emit('collision:' + e2.getType(), e, e2);
+                        e2.emit('collision:' + e.getType(), e2, e);
+                    }
+                }
+            }
         }
     },
 

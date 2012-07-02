@@ -1,10 +1,16 @@
 define(function(require) {
 
 var THREE = require('lib/Three');
+var EventEmitter = require('lib/eventemitter2');
 var Tasks = require('./Tasks');
 
 var Entity = Class.extend({
+    family: 'entity',
+
+    type: 'entity',
+
     init: function(options) {
+        _.extend(this, new EventEmitter());
         this.set(options);
     },
 
@@ -35,6 +41,14 @@ var Entity = Class.extend({
         this.disableTasks = false;
         this.xScale = options.xScale || options.scale || 1;
         this.yScale = options.yScale || options.scale || 1;
+        this.hitboxScale = options.hitboxScale || 1;
+        if (options.events) {
+            for (var i in options.events) {
+                if (options.events.hasOwnProperty(i)) {
+                    this.on(i, options.events[i]);
+                }
+            }
+        }
     },
 
     add: function(entity) {
@@ -54,6 +68,7 @@ var Entity = Class.extend({
         var parentX = this.parent ? this.parent.x : 0;
         var parentY = this.parent ? this.parent.y : 0;
         var radianAngle = (this.angle + 270) * (Math.PI / 180);
+        var size = this.getSize();
         if (this.speedType === Entity.speedTypes.POLAR) {
             this.xSpeed = this.speed * Math.cos(radianAngle);
             this.ySpeed = this.speed * Math.sin(radianAngle);
@@ -70,6 +85,10 @@ var Entity = Class.extend({
         if (!this.disableTasks && this.tasks) {
             this.tasks.update(delta, this);
         }
+    },
+
+    getType: function() {
+        return this.type;
     },
 
     getSize: function() {
@@ -116,6 +135,26 @@ var Entity = Class.extend({
                 this.model.position.y = this.y;
             }
         }
+    },
+
+    getHitbox: function(width, height) {
+        var size = this.getSize(), hitboxScale = this.hitboxScale;
+        width = width || size.x * hitboxScale;
+        height = height || size.y * hitboxScale;
+        return { x: size.x / 3 - width / 2, y: size.y / 3 - height / 2, width: width, height: height };
+    },
+
+    collides: function(other) {
+        if (other.canCollide) {
+            var hitbox = this.hitbox || this.getHitbox();
+            var otherHitbox = other.hitbox || other.getHitbox();
+            var x = hitbox.x + this.x, y = hitbox.y + this.y, 
+                right = x + hitbox.width, bottom = y + hitbox.height,
+                x2 = otherHitbox.x + other.x,  y2 = otherHitbox.y + other.y,
+                right2 = x2 + otherHitbox.width, bottom2 = y2 + otherHitbox.height;
+            return !(x < x2 ||y < y2 || right > right2 || bottom > bottom2);
+        }
+        return false;
     }
 });
 

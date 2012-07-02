@@ -3,18 +3,25 @@ define(function(require) {
 var Entity = require('./Entity');
 var InputMap = require('./InputMap');
 var Input = require('./Input');
+var THREE = require('lib/Three');
 
 var Player = Entity.extend({
+	type: 'player',
+
+	canCollide: true,
+
 	init: function(options) {
 		this._super(options);
 		this.shots = options.shots || {};
 		this.inputMap = new InputMap();
+		this.on('collision:bullet', this.onHit);
 	},
 
 	set: function(options) {
 		this._super(options);
-		this.defaultSpeed = options.speed || 5;
+		this.defaultSpeed = options.speed || 8;
 		this.focusSpeed = options.focusSpeed || this.defaultSpeed / 2;
+		this.hitbox = this.getHitbox(10, 10);
 	},
 
 	getKey: function(mappedKey) {
@@ -31,6 +38,10 @@ var Player = Entity.extend({
 			this._super(delta);
 			this.stayInBounds();
 		}
+	},
+
+	onHit: function(player, other) {
+		other.model.color.setHex(0xFFFF00);
 	},
 
 	control: function() {

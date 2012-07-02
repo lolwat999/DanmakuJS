@@ -4,6 +4,10 @@ var THREE = require('lib/Three');
 var Entity = require('./Entity');
 
 var Bullet = Entity.extend({
+    type: 'bullet',
+
+    canCollide: true,
+
     init: function(options) {
         this.time = 0;
         this._super(options);
@@ -15,6 +19,7 @@ var Bullet = Entity.extend({
         this.model.blending = options.blending || THREE.AdditiveBlending;
         this.speedType = options.speedType || Entity.speedTypes.POLAR;
         this.angleToRotation = options.angleToRotation || true;
+        this.owner = options.owner || null;
     },
 
     expired: function() {
@@ -28,6 +33,7 @@ var Bullet = Entity.extend({
         }
         this.model.opacity = opacity < 0 ? 0 : opacity;
         this.disableTasks = true;
+        this.canCollide = false;
     },
     
     update: function(delta) {
@@ -38,6 +44,11 @@ var Bullet = Entity.extend({
             }
             this._super(delta);
         }
+    },
+
+    getType: function() {
+        return this.owner && this.owner.type !== this.type ? 
+            this.type + ':' + this.owner.type : this.type;
     }
 });
 

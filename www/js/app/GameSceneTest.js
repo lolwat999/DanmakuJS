@@ -5,6 +5,7 @@ var Bullet = require('./Bullet');
 var Player = require('./Player');
 var Tasks = require('./Tasks');
 var OverlayState = require('./OverlayState');
+var Entity = require('./Entity');
 
 var GameSceneTest = GameScene.extend({
     init: function(core, background, foreground) {
@@ -18,6 +19,8 @@ var GameSceneTest = GameScene.extend({
         }))
         this.add(new Tasks({ tasks: [ that.tasks.addCircle ] }));
         this.foreground = new OverlayState(core);
+        this.foreground.frame = new Entity({ x: 0, y: 0, image: 'frame.png' });
+        this.foreground.add(this.foreground.frame);
     },
 
     tasks: {

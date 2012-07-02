@@ -13,9 +13,6 @@ var OverlayState = GameState.extend({
         this.camera = camera ||  new THREE.PerspectiveCamera(60, width / height, 1, 5000);
         this.camera.position.z = 640;
         this.scene.add( this.camera );
-        this.add(new Entity({
-            image: 'frame.png'
-        }));
     },
 
     add: function(entity) {
