@@ -20,6 +20,7 @@ var Bullet = Entity.extend({
         this.speedType = options.speedType || Entity.speedTypes.POLAR;
         this.angleToRotation = options.angleToRotation || true;
         this.owner = options.owner || null;
+        this.angleOffset = options.angleOffset || 270;
     },
 
     expired: function() {
@@ -37,6 +38,9 @@ var Bullet = Entity.extend({
     },
     
     update: function(delta) {
+        if (this.outOfBounds(500)) {
+            this.alive = false;
+        }
         if (this.alive) {
             this.time += delta / 0.016666;
             if (this.time > this.life) {
@@ -44,6 +48,13 @@ var Bullet = Entity.extend({
             }
             this._super(delta);
         }
+    },
+
+    collides: function(other) {
+        if (other instanceof this.owner.constructor) {
+            return false;
+        }
+        return this._super(other);
     },
 
     getType: function() {

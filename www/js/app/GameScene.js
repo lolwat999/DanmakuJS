@@ -16,6 +16,7 @@ var GameScene = GameState.extend({
         this.gameArea = { x: 0, y: 0, width: 970, height: 1485 };
         this.camera.position.x = 225 + this.gameArea.x + this.gameArea.width / 2;
         this.camera.position.y = this.gameArea.y + this.gameArea.height / 2 - 30;
+        this.collisionTestStep = 1;
     },
 
     add: function(entity) {
@@ -27,16 +28,25 @@ var GameScene = GameState.extend({
 
     update: function(delta) {
         this._super(delta);
-        var entities = this.entities;
-        for (var i=0, iMax = entities.length; i<iMax; ++i) {
-            var e = entities[i];
-            var constructor = e.constructor;
-            if (constructor) {
-                for (var j=i; j<iMax; ++j) {
-                    var e2 = entities[j];
-                    if (!(e2 instanceof constructor) && e.collides && e.collides(e2)) {
-                        e.emit('collision:' + e2.getType(), e, e2);
-                        e2.emit('collision:' + e.getType(), e2, e);
+        if (!(this.frame % this.collisionTestStep)) {
+            this.checkCollision(delta);
+        }
+    },
+
+    checkCollision: function(delta) {
+        var entitiesByGrid = this.entitiesByGrid;   
+        for (var location in entitiesByGrid) {
+            var entities = entitiesByGrid[location];
+            for (var i=0, iMax = entities.length; i<iMax; ++i) {
+                var e = entities[i];
+                var constructor = e.constructor;
+                if (constructor) {
+                    for (var j=i; j<iMax; ++j) {
+                        var e2 = entities[j];
+                        if (!(e2 instanceof constructor) && e.collides && e.collides(e2)) {
+                            e.emit('collision:' + e2.getType(), e, e2);
+                            e2.emit('collision:' + e.getType(), e2, e);
+                        }
                     }
                 }
             }
@@ -54,7 +64,7 @@ var GameScene = GameState.extend({
         for (var i=0, iMax = this.entities.length; i<iMax; ++i) {
             var entity = this.entities[i];
             if (entity.model) {
-                entity.model.visible = !entity.outOfBounds();
+                entity.model.visible = !entity.outOfBounds(20);
             }
         }
         renderer.render( this.scene, this.camera );

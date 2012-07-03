@@ -12,13 +12,13 @@ var Player = Entity.extend({
 
     init: function(options) {
         this._super(options);
-        this.shots = options.shots || {};
         this.inputMap = new InputMap();
-        this.on('collision:bullet', this.onHit);
+        this.on('collision:bullet:enemy', this.onHit);
     },
 
     set: function(options) {
         this._super(options);
+        this.shots = options.shots || {};
         this.defaultSpeed = options.speed || 8;
         this.focusSpeed = options.focusSpeed || this.defaultSpeed / 2;
         this.hitbox = this.getHitbox(10, 10);
@@ -53,6 +53,7 @@ var Player = Entity.extend({
             speed = focus ? this.focusSpeed : this.defaultSpeed,
             angle,
             shots = this.shots;
+        this.isFocused = focus;
         for (var i in shots) {
             var shot = shots[i];
             if (this.isKeyPressed(i)) {
