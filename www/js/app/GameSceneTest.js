@@ -16,7 +16,7 @@ var GameSceneTest = GameScene.extend({
             x: that.gameArea.width / 2, 
             y: 100,
             image: 'characters/marisa.png',
-            scale: 2
+            scale: 2.5
         }))
         this.foreground = new OverlayState(core);
         this.foreground.frame = new Entity({ x: 0, y: 0, image: 'frame.png' });
@@ -31,7 +31,7 @@ var GameSceneTest = GameScene.extend({
                 y: state.gameArea.height,
                 xSpeed: -(Math.random() * 10) + 5,
                 ySpeed: 5,
-                scale: 2,
+                scale: 2.5,
                 angle: 180,
                 image: 'characters/marisa.png',
                 tasks: [ addCircle ]

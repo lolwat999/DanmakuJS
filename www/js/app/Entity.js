@@ -79,7 +79,8 @@ var Entity = Class.extend({
         this.y -= this.ySpeed * delta * 50;
         this.model.position.x = this.x + parentX;
         this.model.position.y = this.y + parentY;
-        this.model.scale.x = this.xScale;
+        var ratio = this.model.map.image.width / this.model.map.image.height;
+        this.model.scale.x = this.xScale * ratio;
         this.model.scale.y = this.yScale;
         if (!this.disableTasks && this.tasks) {
             this.tasks.update(delta, this);
