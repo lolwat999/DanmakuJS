@@ -13,6 +13,7 @@ var Enemy = Entity.extend({
     init: function(options) {
         this._super(options);
         this.on('collision:bullet:player', this.onHit);
+        this.outOfBoundsKill = 200;
     },
 
     onHit: function(enemy, other) {
@@ -21,7 +22,7 @@ var Enemy = Entity.extend({
 
     update: function(delta) {
         this._super(delta);
-        if (this.outOfBounds(200)) {
+        if (this.outOfBounds(this.outOfBoundsKill)) {
             this.alive = false;
         }
     }
