@@ -150,11 +150,15 @@ var Entity = Class.extend({
         if (other.canCollide) {
             var hitbox = this.hitbox || this.getHitbox();
             var otherHitbox = other.hitbox || other.getHitbox();
-            var x = hitbox.x + this.x, y = hitbox.y + this.y, 
-                right = x + hitbox.width, bottom = y + hitbox.height,
-                x2 = otherHitbox.x + other.x,  y2 = otherHitbox.y + other.y,
-                right2 = x2 + otherHitbox.width, bottom2 = y2 + otherHitbox.height;
-            return !(x < x2 ||y < y2 || right > right2 || bottom > bottom2);
+            var x = hitbox.x + this.x, 
+                x2 = otherHitbox.x + other.x, 
+                y = hitbox.y + this.y,  
+                y2 = otherHitbox.y + other.y,
+                right = x + hitbox.width, 
+                right2 = x2 + otherHitbox.width, 
+                bottom = y + hitbox.height,
+                bottom2 = y2 + otherHitbox.height;
+            return !(x > right2 ||y > bottom2 || right < x2 || bottom < y2);
         }
         return false;
     }

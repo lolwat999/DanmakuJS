@@ -4,6 +4,7 @@ var Entity = require('./Entity');
 var InputMap = require('./InputMap');
 var Input = require('./Input');
 var THREE = require('lib/Three');
+var BulletPattern = require('./BulletPattern');
 
 var Player = Entity.extend({
     type: 'player',
@@ -19,6 +20,11 @@ var Player = Entity.extend({
     set: function(options) {
         this._super(options);
         this.shots = options.shots || {};
+        _.each(this.shots, function(shot, index) {
+            if (typeof shot === 'function') {
+                this.shots[index] = new BulletPattern({ update: shot });
+            }
+        }, this);
         this.defaultSpeed = options.speed || 8;
         this.focusSpeed = options.focusSpeed || this.defaultSpeed / 2;
         this.hitbox = this.getHitbox(10, 10);
@@ -34,17 +40,17 @@ var Player = Entity.extend({
 
     update: function(delta) {
         if (this.alive) {
-            this.control();
+            this.control(delta);
             this._super(delta);
             this.stayInBounds();
         }
     },
 
     onHit: function(player, other) {
-        other.model.color.setHex(0xFFFF00);
+        this.alive = false;
     },
 
-    control: function() {
+    control: function(delta) {
         var up = this.isKeyPressed('Up'), 
             down = this.isKeyPressed('Down'), 
             left = this.isKeyPressed('Left'), 
@@ -56,9 +62,8 @@ var Player = Entity.extend({
         this.isFocused = focus;
         for (var i in shots) {
             var shot = shots[i];
-            if (this.isKeyPressed(i)) {
-                shot.update(delta, this);
-            }
+            shot.isEnabled = this.isKeyPressed(i);
+            shot.update(delta, this, this.state);
         }
         this.xSpeed = 0;
         this.ySpeed = 0;

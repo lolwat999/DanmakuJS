@@ -34,9 +34,9 @@ var GameScene = GameState.extend({
     },
 
     checkCollision: function(delta) {
-        var entitiesByGrid = this.entitiesByGrid;   
+        var entitiesByGrid = this.entitiesByGrid;
         for (var location in entitiesByGrid) {
-            var entities = entitiesByGrid[location];
+            var entities = this.entitiesByGrid[location];
             for (var i=0, iMax = entities.length; i<iMax; ++i) {
                 var e = entities[i];
                 var constructor = e.constructor;

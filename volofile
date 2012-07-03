@@ -4,6 +4,14 @@ define(function (require) {
     'use strict';
 
     return {
+        serve: {
+            run: function(d, v, namedArgs) {
+                d.resolve(v.spawn('node', ['server.js', '-o'], {
+                    useConsole: !namedArgs.quiet
+                }));
+            }
+        },
+        
         build: {
             flags: {
                 //Does not print the build output.

@@ -13,11 +13,12 @@ var Enemy = Entity.extend({
     init: function(options) {
         this._super(options);
         this.on('collision:bullet:player', this.onHit);
+        this.on('collision:bullet', this.onHit);
         this.outOfBoundsKill = 200;
     },
 
     onHit: function(enemy, other) {
-        this.alive = false;
+        enemy.alive = false;
     },
 
     update: function(delta) {
