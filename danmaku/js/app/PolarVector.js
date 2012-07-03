@@ -1,0 +1,1 @@
+define(["require"],function(a){var b=Class.extend({init:function(a,b){this.radius=a,this.angle=b},clone:function(){return new b(radius,angle)}});return b.fromCart=function(a,c){return typeof a=="object"&&(c=a.y,a=a.x),new b((Math.sqrt(c*c+a*a),Math.atan2(c,a)))},b.toCart=function(a,b){return typeof a=="object"&&(b=a.angle,a=a.radius),{x:a*Math.cos(b),y:a*Math.sin(b)}},b})
