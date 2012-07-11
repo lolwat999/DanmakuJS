@@ -1,0 +1,27 @@
+#TouhouDanmakufu
+#Title[Attack Name]
+#Text[Attack Description]
+#Image[.\img.png]
+#BackGround[User(.\bg.png, 1, 1)]
+#BGM[.\bgm.mp3]
+#PlayLevel[Normal]
+#Player[FREE]
+#ScriptVersion[2]
+
+script_enemy_main {
+    @Initialize {
+    
+    }
+
+    @MainLoop {
+    }
+
+    @DrawLoop {
+    }
+
+    @Finalize {
+    }
+
+    @BackGround {
+    }
+}
