@@ -9,6 +9,8 @@
 #ScriptVersion[2]
 
 script_enemy_main {
+    let testing = "huh what?";
+
     @Initialize {
     
     }

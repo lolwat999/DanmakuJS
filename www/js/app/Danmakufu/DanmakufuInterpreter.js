@@ -1,28 +1,29 @@
 define(function(require) {
-    
+
+var DanmakufuGlobals = require('./DanmakufuGlobals');
+var Scanner = require('./Scanner');
+
 var DanmakufuInterpreter = Class.extend({
     init: function(fileString) {
         var loc = window.location.pathname;
-        var dir = loc.substring(0, loc.lastIndexOf('/'));
-        this.globals = new DanmakufuGlobals(dir);
-        fileString = fileString.replaceAll('let', 'var');
+        var dir = loc.substring(loc.lastIndexOf('/'));
+        this.globals = new DanmakufuGlobals({
+        	directory: dir
+        });
+        var scanner = new Scanner(fileString);
+        /*fileString = fileString.replaceAll('let', 'var');
         _.each(replaceAllPairs, function(replacement, toReplace) {
-            console.log(toReplace, replacement);
             fileString = fileString.replaceAll(toReplace, replacement);
         });
-        /*for (var location = fileString.indexOf('#include_function'); location !== -1;
-            location = fileString.indexOf('#include_function')) {
-
-        }
-        var blocks = getBlocks(fileString);
-        console.log(blocks);*/
         var objectTypes = [ 'script_enemy_main' ];
         this.objects = {};
         _.each(objectTypes, function(type) {
         	this.objects[type] = parseObject(fileString, type);
         }, this);
         this.comments = parseComments(fileString);
-        console.log(this);
+        if (!this.comments.player) {
+        	this.comments.player = 'FREE';
+        }*/
     },
 
     execute: function(javascriptString, closure) {
@@ -72,7 +73,7 @@ var parseComments = function(fileString) {
         	}
         	var comment = { startLocation: location, endLocation: endLocation, 
         		title: title, description: description };
-        	if (description) {
+        	if (description || title === 'TouhouDanmakufu') {
         		comments[title] = comment;
         	} else {
         		comments.uncategorized = comments.uncategorized || [];
@@ -173,26 +174,16 @@ var getBlock = function(fileString, blockIdentifier, startLocation, blockStart, 
     return block;
 };
 
-var DanmakufuGlobals = function(options) {
-    options = options || {};
-    this.directory = options.directory || '';
-};
-
 var replaceAllPairs = {
-    'let': 'var',
-    '~': '+'
+    'let': 'var'
 };
 
 DanmakufuInterpreter.loadFile = function(path) {
-    try {
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('GET', path, false);
-        xmlHttp.send(null);
-        if (xmlHttp.status === 200 || xmlHttp.status === 0) {
-            return new DanmakufuInterpreter(xmlHttp.responseText);
-        }
-    } catch(e) {
-        alert(path + " failed to load. Reason: " + e);
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open('GET', path, false);
+    xmlHttp.send(null);
+    if (xmlHttp.status === 200 || xmlHttp.status === 0) {
+        return new DanmakufuInterpreter(xmlHttp.responseText);
     }
     return null;
 };
