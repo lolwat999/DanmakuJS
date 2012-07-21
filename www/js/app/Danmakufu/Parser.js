@@ -213,7 +213,7 @@ Parser.prototype = {
                     throw parserError(scanner, 'Sub is not a function.');
                 }
                 var argc = this.parseArguments(block);
-                if (argc !== symbol.sub.arguments) {
+                if (symbol.sub.arguments !== undefined && argc !== symbol.sub.arguments) {
                     throw parserError(scanner, 'Mismatched arguments on: ' + symbol.sub.name);
                 }
                 block.codes.push({
@@ -367,11 +367,10 @@ Parser.prototype = {
     parseArguments: function(block) {
         var result = 0;
         var scanner = this.scanner;
-        scanner.advance();
         if (scanner.next == 'openParen') {
-            ++result;
             scanner.advance();
             while (scanner.next !== 'closeParen') {
+                ++result;
                 this.parseExpression(block);
                 if (scanner.next !== 'comma') {
                     break;
@@ -443,7 +442,7 @@ Parser.prototype = {
                         throw parserError(scanner, '...?');
                     }
                     var argc = this.parseArguments(block);
-                    if (argc !== symbol.sub.arguments) {
+                    if (symbol.sub.arguments !== undefined && argc !== symbol.sub.arguments) {
                         throw parserError(scanner, 'Wrong number of arguments: ' + symbol.sub.name);
                     }
                     block.codes.push({ line: scanner.line, type: 'call', 

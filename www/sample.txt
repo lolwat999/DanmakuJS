@@ -15,6 +15,7 @@ script_enemy_main {
 
     @Initialize {
         let c = a + b;
+        print(c);
     }
 
     @MainLoop {
