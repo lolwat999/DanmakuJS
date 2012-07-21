@@ -1,29 +1,32 @@
 define(function(require) {
 
-var Parser = function(scriptEngine, scanner) {
+var Scanner = require('./Scanner');
+
+var Parser = function(mainBlock, blocks, source, functions) {
+    functions = functions || [];
+
     this.frame = []; // A list of scopes
-    this.scanner = scanner;
+    this.comments = [];
+    this.scanner = new Scanner({ source: source });
     this.events = {};
-    this.scriptEngine = scriptEngine;
+    this.frame.push({ kind: 'normal', scope: {}, name: mainBlock.name });
+    this.blocks = blocks;
 
-    this.frame.push({ });
-
-    try {
-        this.scanCurrentScope(0, null, false);
-        this.parseStatements(engine.mainBlock);
-    } catch (error) {
-        alert(error.message);
-        console.trace();
+    for (var i=0, length=functions.length; i<length; ++i) {
+        this.registerFunction(functions[i]);
     }
+
+    this.scanCurrentScope(0, null, false);
+    this.parseStatements(mainBlock);
 };
 
 Parser.prototype = {
     scanCurrentScope: function(level, args, addingResult) {
         var scanner = this.scanner.clone();
         var currentScope = this.frame[this.frame.length - 1];
-        var scriptEngine = this.scriptEngine;
         var current = 0;
         var variable = 0;
+        var blocks = this.blocks;
         
         if (addingResult) {
             currentScope.result = {
@@ -35,44 +38,47 @@ Parser.prototype = {
         }
 
         if (args) {
-            for (var i=0, i<args.length; ++i) {
-                currentScope[args[i]] = {
+            for (var i=0, length=args.length; i<length; ++i) {
+                currentScope.scope[args[i]] = {
                     level: level,
                     sub: null,
-                    variable: variable
+                    variable: variable,
+                    name: args[i]
                 };
                 ++variable;
             }
         }
         
         while (current >= 0 && scanner.next) {
-            if (scanner.next === 'openParen') {
+            if (scanner.next === 'openBrace') {
                 ++current;
                 scanner.advance();
-            } else if (scanner.next === 'closeParen') {
+            } else if (scanner.next === 'closeBrace') {
                 --current;
                 scanner.advance();
             } else if (FunctionTypes[scanner.next]) {
                 var type = scanner.next;
                 scanner.advance();
                 if (!current) {
-                    if (currentScope[scanner.word]) {
-                        throw new Error('A routine is defined twice.');
+                    if (currentScope.scope[scanner.word]) {
+                        throw parserError(scanner, 'A routine is defined twice.');
                     }
                     var kind = (type === 'sub' || type === 'at') ? 'sub' : 
                         (type === 'function' ? type : 'microthread');
                     var symbol = {
                         level: level,
-                        sub: scriptEngine.newBlock(level + 1, kind),
+                        sub: newBlock(blocks, level + 1, kind),
                         name: scanner.word,
                         func: null,
                         variable: -1
                     };
-                    currentScope[scanner.word] = symbol;
+                    symbol.sub.name = scanner.word;
+                    symbol.sub.func = null;
+                    currentScope.scope[scanner.word] = symbol;
                     scanner.advance();
                     if (kind !== 'sub' &&  scanner.next === 'openParen') {
                         scanner.advance();
-                        while (scanner.next === 'string', || scanner.next === 'LET' || scanner.next === 'REAL') {
+                        while (scanner.next === 'string' || scanner.next === 'LET' || scanner.next === 'REAL') {
                             ++symbol.sub.arguments;
                             if (scanner.next === 'LET' || scanner.next === 'REAL') {
                                 scanner.advance();
@@ -91,17 +97,31 @@ Parser.prototype = {
                 scanner.advance();
                 if (!current) {
                     if (scanner.word === 'result') {
-                        if (currentScope[scanner.word]) {
-                            throw new Error("Variables with the same name are declared in the same scope");
+                        if (currentScope.scope[scanner.word]) {
+                            throw parserError(scanner, "Variables with the same name are declared in the same scope");
                         }
                     }
-                    currenScope[scanner.word] = {
+                    currentScope.scope[scanner.word] = {
                         level: level,
                         sub: null,
-                        variable: variable
+                        variable: variable,
+                        name: scanner.word
                     };
                     ++variable;
                     scanner.advance();
+                }
+            } else if (scanner.next === 'word') {
+                var word = scanner.word;
+                scanner.advance();
+                if (scanner.next === 'openBrace' && !current) {
+                    var symbol = {
+                        level: level,
+                        sub: newBlock(blocks, level + 1, 'namespace'),
+                        name: word,
+                        variable: -1
+                    };
+                    symbol.sub.name = word;
+                    currentScope.scope[word] = symbol;
                 }
             } else {
                 scanner.advance();
@@ -110,22 +130,22 @@ Parser.prototype = {
     },
 
     registerFunction: function(func) {
-        var engine = this.scriptEngine;
+        var blocks = this.blocks;
         var symbol = {
             level: 0,
-            sub: engine.newBlock(0, 'function'),
+            sub: newBlock(blocks, 0, 'function'),
             variable: -1
         };
         symbol.sub.arguments = func.arguments;
         symbol.sub.name= func.name;
         symbol.sub.func = func.func;
-        this.frame[0][func.name] = symbol;
+        this.frame[0].scope[func.name] = symbol;
     },
 
     search: function(name) {
         var symbol = null;
         for (var i = this.frame.length - 1; i >= 0 && !symbol; --i) {
-            symbol = this.frame[i][name];
+            symbol = this.frame[i].scope[name];
         }
         return symbol;
     },
@@ -145,27 +165,23 @@ Parser.prototype = {
     },
 
     writeOperation: function(block, name, clauses) {
-        var symbol = search(name);
         var scanner = this.scanner;
-        if (symbol.sub.arguments !== clauses) {
-            throw new Error('Mismatched arguments and clauses for: ' + name);
-        }
         block.codes.push({
             line: scanner.line,
-            sub: symbol.sub,
             clauses: clauses,
-            type: 'callAndPushResult'
+            type: 'operation',
+            name: name
         });
     },
 
     parseParentheses: function(block) {
         var scanner = this.scanner;
         if (scanner.next !== 'openParen') {
-            throw new Error('\"(\" is required.');
+            throw parserError(scanner, '\"(\" is required.');
         }
         this.parseExpression(block);
         if (scanner.next !== 'closeParen') {
-            throw new Error('\")\" is required.');
+            throw parserError(scanner, '\")\" is required.');
         }
         scanner.advance();
     },
@@ -175,9 +191,10 @@ Parser.prototype = {
         if (scanner.next === 'real') {
             block.codes.push({
                 line: scanner.line,
-                value: parseFloat(scanner.word),
+                value: scanner.word,
                 type: 'pushValue'
             });
+            scanner.advance();
         } else if (scanner.next === 'string') {
             block.codes.push({
                 line: scanner.line,
@@ -188,16 +205,16 @@ Parser.prototype = {
         } else if (scanner.next === 'word') {
             var symbol = this.search(scanner.word);
             if (!symbol) {
-                throw new Error('Symbol not found: ' + scanner.word);
+                throw parserError(scanner, 'Symbol not found: ' + scanner.word);
             }
             scanner.advance();
             if (symbol.sub) {
                 if (symbol.sub.kind !== 'function') {
-                    throw new Error('Sub is not a function.');
+                    throw parserError(scanner, 'Sub is not a function.');
                 }
                 var argc = this.parseArguments(block);
                 if (argc !== symbol.sub.arguments) {
-                    throw new Error('Mismatched arguments on: ' + symbol.sub.name);
+                    throw parserError(scanner, 'Mismatched arguments on: ' + symbol.sub.name);
                 }
                 block.codes.push({
                     line: scanner.line,
@@ -229,7 +246,7 @@ Parser.prototype = {
                 scanner.advance();
             }
             if (scanner.next !== 'closeBracket') {
-                throw new Error('Mismatched brackets.');
+                throw parserError(scanner, 'Mismatched brackets.');
             }
             scanner.advance();
         } else if (scanner.next === 'openAbs') {
@@ -237,12 +254,12 @@ Parser.prototype = {
             this.parseExpression(block);
             this.writeOperation(block, 'absolute', 1);
             if (scanner.next !== 'closeAbs') {
-                throw new Error('Mismatched absolute, \"|)\" is required.');
+                throw parserError(scanner, 'Mismatched absolute, \"|)\" is required.');
             }
         } else if (scanner.next === 'openParen') {
             this.parseParentheses(block);
         } else {
-            throw new Error('This is not a valid expression term.');
+            throw parserError(scanner, 'This is not a valid expression term.');
         }
     },
 
@@ -282,7 +299,7 @@ Parser.prototype = {
                     this.writeOperation(block, 'index', 2);
                 }
                 if (scanner.next !== 'closeBracket') {
-                    throw new Error('Mismatched square brackets, \"]\" is required.');
+                    throw parserError(scanner, 'Mismatched square brackets, \"]\" is required.');
                 }
                 scanner.advance();
             }
@@ -316,7 +333,7 @@ Parser.prototype = {
         var scanner = this.scanner;
         this.parseSum(block);
         if (scanner.next === 'assign') {
-            throw new Error('Did you mistake == for = ?');
+            throw parserError(scanner, 'Did you mistake == for = ?');
         }
         if (ComparisonTypes[scanner.next]) {
             var type = scanner.next;
@@ -362,7 +379,7 @@ Parser.prototype = {
                 scanner.advance();
             }
             if (scanner.next !== 'closeParen') {
-                throw new Error('Mismatched parentheses, \")\" is required.');
+                throw parserError(scanner, 'Mismatched parentheses, \")\" is required.');
             }
             scanner.advance();
         }
@@ -371,15 +388,19 @@ Parser.prototype = {
 
     parseStatements: function(block) {
         var scanner = this.scanner;
+        var blocks = this.blocks;
         for ( ; ; ) {
             var needSemicolon = true;
             if (scanner.next === 'word') {
                 var symbol = this.search(scanner.word);
                 if (!symbol) {
-                    throw new Error('Symbol not found: ' + scanner.word);
+                    throw parserError(scanner, 'Symbol not found: ' + scanner.word);
                 }
                 scanner.advance();
-                if (scanner.next === 'assign') {
+                if (scanner.next === 'openBrace') {
+                    this.parseBlock(symbol.sub);
+                    needSemicolon = false;
+                } else if (scanner.next === 'assign') {
                     scanner.advance();
                     this.parseExpression(block);
                     block.codes.push({ line: scanner.line, type: 'assign', 
@@ -390,12 +411,12 @@ Parser.prototype = {
                     scanner.advance();
                     this.parseExpression(block);
                     if (scanner.next !== 'closeBracket') {
-                        throw new Error('Mismatched brackets, a \"]\" is required.');
+                        throw parserError(scanner, 'Mismatched brackets, a \"]\" is required.');
                     }
                     scanner.advance();
                     this.writeOperation(block, 'index!', 2);
                     if (scanner.next !== 'assign') {
-                        throw new Error('...?');
+                        throw parserError(scanner, '...?');
                     }
                     block.codes.push({ line: scanner.line, type: 'assignWritable', 
                         level: symbol.level, variable: symbol.variable });
@@ -419,11 +440,11 @@ Parser.prototype = {
 
                 } else {
                     if (!symbol.sub) {
-                        throw new Error('...?');
+                        throw parserError(scanner, '...?');
                     }
-                    int argc = this.parseArguments(block);
+                    var argc = this.parseArguments(block);
                     if (argc !== symbol.sub.arguments) {
-                        throw new Error('Wrong number of arguments: ' + symbol.sub.name);
+                        throw parserError(scanner, 'Wrong number of arguments: ' + symbol.sub.name);
                     }
                     block.codes.push({ line: scanner.line, type: 'call', 
                         value: symbol.sub, args: argc })
@@ -431,7 +452,7 @@ Parser.prototype = {
             } else if (scanner.next === 'LET' || scanner.next === 'REAL') {
                 scanner.advance();
                 if (scanner.next !== 'word') {
-                    throw new Error('Identifiers are required.');
+                    throw parserError(scanner, 'Identifiers are required.');
                 }
                 var symbol = this.search(scanner.word);
                 scanner.advance();
@@ -486,28 +507,28 @@ Parser.prototype = {
                 var back = (scanner.next === 'DESCENT');
                 scanner.advance();
                 if (scanner.next !== 'openParen') {
-                    throw new Error('\"(\" is required');
+                    throw parserError(scanner, '\"(\" is required');
                 }
                 scanner.advance();
                 if (scanner.next === 'LET' || scanner.next === 'REAL') {
                     scanner.advance();
                 }
                 if (scanner.next !== 'word') {
-                    throw new Error('Identifier Expected');
+                    throw parserError(scanner, 'Identifier Expected');
                 }
                 var word = scanner.word;
                 scanner.advance();
                 if (scanner.next !== 'IN') {
-                    throw new Error('must be in');
+                    throw parserError(scanner, 'must be in');
                 }
                 scanner.advance();
                 this.parseExpression(block);
                 if (scanner.next !== 'range') {
-                    throw new Error('\"..\" is required in ASCENT/DESCENT');
+                    throw parserError(scanner, '\"..\" is required in ASCENT/DESCENT');
                 }
                 scanner.advance();
                 if (scanner.next !== 'closeParen') {
-                    throw new Error('"\")\" is required"');
+                    throw parserError(scanner, '"\")\" is required"');
                 }
                 scanner.advance();
                 if (scanner.next === 'LOOP') {
@@ -523,10 +544,10 @@ Parser.prototype = {
                 if (back) {
                     this.writeOperation(block, 'predecessor', 1);
                 }
-                var newBlock = this.scriptEngine.newBlock(block.level + 1, 'loop');
+                var nextBlock = newBlock(blocks, block.level + 1, 'loop');
                 var counter = [];
                 counter.push(word);
-                this.parseBlock(newBlock, counter, false);
+                this.parseBlock(nextBlock, counter, false);
                 block.codes.push({ line: scanner.line, type: 'dup' });
                 block.codes.push({ line: scanner.line, type: 'call', value: newBlock, length: 1 });
                 if (!back) {
@@ -564,7 +585,7 @@ Parser.prototype = {
                 while (scanner.next === 'CASE') {
                     scanner.advance();
                     if (scanner.next !== 'openParen') {
-                        throw new Error('\"(\" is needed');
+                        throw parserError(scanner, '\"(\" is needed');
                     }
                     block.codes.push({ line: scanner.line, type: 'caseBegin' });
                     do {
@@ -577,7 +598,7 @@ Parser.prototype = {
                         block.codes.push({ line: scanner.line, type: 'pop' });
                     } while (scanner.next === 'comma');
                     if (scanner.next !== 'closeParen') {
-                        throw new Error('\")\" is needed');
+                        throw parserError(scanner, '\")\" is needed');
                     }
                     scanner.advance();
                     block.codes.push({ line: scanner.line, type: 'caseIfNot' });
@@ -605,7 +626,7 @@ Parser.prototype = {
                     this.parseExpression(block);
                     var symbol = this.searchResult();
                     if (!symbol) {
-                        throw new Error('Symbol does not exist?');
+                        throw parserError(scanner, 'Symbol does not exist?');
                     }
                     block.codes.push({ line: scanner.line, type: 'assign', level: symbol.level, variable: symbol.variable });
                 }
@@ -618,8 +639,8 @@ Parser.prototype = {
                 scanner.advance();
                 var symbol = this.search(scanner.word);
                 if (isEvent) {
-                    if (symbol.sub.level > 1) {
-                        throw new Error('...?');
+                    if (symbol.sub.level > 1 && block.kind !== 'namespace') {
+                        throw parserError(scanner, '...?');
                     }
                     this.events[symbol.sub.name] = symbol.sub;
                 }
@@ -632,7 +653,7 @@ Parser.prototype = {
                             if (scanner.next === 'LET' || scanner.next === 'REAL') {
                                 scanner.advance();
                                 if (scanner.next !== 'word') {
-                                    throw new Error('Arguments are required.');
+                                    throw parserError(scanner, 'Arguments are required.');
                                 }
                             }
                             args.push(scanner.word);
@@ -656,7 +677,12 @@ Parser.prototype = {
                         scanner.advance();
                     }
                     this.parseBlock(symbol.sub, args, symbol.sub.kind === 'function');
+                    needSemicolon = false;
                 }
+            } else if (scanner.next === 'comment') {
+                this.comments.push({ line: scanner.line, description: scanner.word });
+                scanner.advance();
+                needSemicolon = false;
             }
             if (needSemicolon && scanner.next !== 'semicolon') {
                 break;
@@ -668,7 +694,7 @@ Parser.prototype = {
     },
 
     parseInlineBlock: function(block, blockKind) {
-        var block = this.scriptEngine.newBlock(block.level + 1, blockKind);
+        var block = newBlock(this.blocks, block.level + 1, blockKind);
         this.parseBlock(block, null, false);
         block.codes.push({ line: scanner.line, type: 'call', block: block, length: 0 });
     },
@@ -676,10 +702,10 @@ Parser.prototype = {
     parseBlock: function(block, args, addingResult) {
         var scanner = this.scanner;
         if (scanner.next !== 'openBrace') {
-            throw new Error('\"{\" is required.');
+            throw parserError(scanner, '\"{\" is required.');
         }
         scanner.advance();
-        this.frame.push({ kind: block.kind });
+        this.frame.push({ kind: block.kind, scope: {}, name: block.name });
         this.scanCurrentScope(block.level, args, addingResult);
         if (args) {
             for (var i=0, length=args.length; i<length; ++i) {
@@ -690,10 +716,25 @@ Parser.prototype = {
         this.parseStatements(block);
         this.frame.pop();
         if (scanner.next !== 'closeBrace') {
-            throw new Error('\"}\" is required.');
+            throw parserError(scanner, '\"}\" is required.');
         }
         scanner.advance();
     }
+};
+
+var parserError = function(scanner, description) {
+    console.trace();
+    return {
+        line: scanner.line,
+        message: description,
+        at: scanner.word
+    };
+};
+
+var newBlock = function(blocks, level, kind) {
+    var block = { level: level, kind: kind, codes: [] };
+    blocks.push(block);
+    return block;
 };
 
 var FunctionTypes = {

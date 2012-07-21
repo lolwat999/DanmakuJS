@@ -62,7 +62,7 @@ var TokenKind = {
     'vertical': '|',
     'ampersand': '&',
 
-    'comment': /#+\b/,
+    'comment': '#',
     'real': /[0-9]+("."[0-9]+)?\b/,
     'string': /".*?"/,
     'word': /\w+\b/,

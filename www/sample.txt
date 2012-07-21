@@ -10,20 +10,26 @@
 
 script_enemy_main {
     let testing = "huh what?";
+    let a = 20;
+    let b = 22;
 
     @Initialize {
-    
+        let c = a + b;
     }
 
     @MainLoop {
+    
     }
 
     @DrawLoop {
+    
     }
 
     @Finalize {
+    
     }
 
     @BackGround {
+
     }
 }

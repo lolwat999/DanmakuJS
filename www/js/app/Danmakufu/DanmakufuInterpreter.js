@@ -1,16 +1,16 @@
 define(function(require) {
 
 var DanmakufuGlobals = require('./DanmakufuGlobals');
-var Scanner = require('./Scanner');
+var ScriptEngine = require('./ScriptEngine');
 
 var DanmakufuInterpreter = Class.extend({
     init: function(fileString) {
         var loc = window.location.pathname;
         var dir = loc.substring(loc.lastIndexOf('/'));
-        this.globals = new DanmakufuGlobals({
-        	directory: dir
-        });
-        var scanner = new Scanner(fileString);
+        this.globals = new DanmakufuGlobals({ directory: dir });
+
+        var engine = new ScriptEngine(fileString);
+        console.log(engine);
         /*fileString = fileString.replaceAll('let', 'var');
         _.each(replaceAllPairs, function(replacement, toReplace) {
             fileString = fileString.replaceAll(toReplace, replacement);
@@ -175,7 +175,6 @@ var getBlock = function(fileString, blockIdentifier, startLocation, blockStart, 
 };
 
 var replaceAllPairs = {
-    'let': 'var'
 };
 
 DanmakufuInterpreter.loadFile = function(path) {
