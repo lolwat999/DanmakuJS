@@ -1,10 +1,11 @@
+if (typeof define !== 'function') { var define = (require('amdefine'))(module); }
 define(function(require) {
 
 var Parser = require('./Parser');
 
 var ScriptEngine = function(source, functions) {
     this.source = source;
-    this.mainBlock = { level: 0, kind: 'normal', codes: [], name: 'global' };
+    this.mainBlock = { level: 0, kind: 'normal', codes: [], name: '__global__' };
     this.blocks = [ this.mainBlock ];
 
     try {

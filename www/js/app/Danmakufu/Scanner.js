@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = (require('amdefine'))(module); }
 define(function(require) {
     
 var TokenKind = require('./TokenKind');
@@ -54,9 +55,6 @@ Scanner.prototype = {
                             token += this.advance();
                         }
                         this.inComment = false;
-                    }
-                    if (kind === 'string') {
-                        token = token.substr(1, token.length - 2);
                     }
                     if (kind === 'real') {
                         token = parseFloat(token);

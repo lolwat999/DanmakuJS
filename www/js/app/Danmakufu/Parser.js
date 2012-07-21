@@ -1,3 +1,4 @@
+if (typeof define !== 'function') { var define = (require('amdefine'))(module); }
 define(function(require) {
 
 var Scanner = require('./Scanner');
@@ -226,7 +227,7 @@ Parser.prototype = {
                 block.codes.push({
                     line: scanner.line,
                     level: symbol.level,
-                    variable: symbol.variable,
+                    variable: symbol.name,
                     type: 'pushVariable'
                 });
             }
@@ -403,10 +404,10 @@ Parser.prototype = {
                     scanner.advance();
                     this.parseExpression(block);
                     block.codes.push({ line: scanner.line, type: 'assign', 
-                        level: symbol.level, variable: symbol.variable });
+                        level: symbol.level, variable: symbol.name });
                 } else if (scanner.next === 'openBracket') {
                     block.codes.push({ line: scanner.line, type: 'pushVariableWritable', 
-                        level: symbol.level, variable: symbol.variable });
+                        level: symbol.level, variable: symbol.name });
                     scanner.advance();
                     this.parseExpression(block);
                     if (scanner.next !== 'closeBracket') {
@@ -418,24 +419,24 @@ Parser.prototype = {
                         throw parserError(scanner, '...?');
                     }
                     block.codes.push({ line: scanner.line, type: 'assignWritable', 
-                        level: symbol.level, variable: symbol.variable });
+                        level: symbol.level, variable: symbol.name });
                 } else if (OperatorAssignTypes[scanner.next]) {
                     var type = scanner.next.substr(0, scanner.next.indexOf('Assign'));
                     scanner.advance();
                     block.codes.push({ line: scanner.line, type: 'pushVariable', 
-                        level: symbol.level, variable: symbol.variable });
+                        level: symbol.level, variable: symbol.name });
                     this.parseExpression(block);
                     this.writeOperation(block, type, 2);
                     block.codes.push({ line: scanner.line, type: 'assign', 
-                        level: symbol.level, variable: symbol.variable });
+                        level: symbol.level, variable: symbol.name });
                 } else if (scanner.next === 'inc' || scanner.next === 'dec') {
                     var type = scanner.next === 'inc' ? 'successor' : 'predecessor';
                     scanner.advance();
                     block.codes.push({ line: scanner.line, type: 'pushVariable', 
-                        level: symbol.level, variable: symbol.variable });
+                        level: symbol.level, variable: symbol.name });
                     this.writeOperation(block, type, 1);
                     block.codes.push({ line: scanner.line, type: 'assign', 
-                        level: symbol.level, variable: symbol.variable });
+                        level: symbol.level, variable: symbol.name });
 
                 } else {
                     if (!symbol.sub) {
@@ -458,7 +459,7 @@ Parser.prototype = {
                 if (scanner.next === 'assign') {
                     scanner.advance();
                     this.parseExpression(block);
-                    block.codes.push({ line: scanner.line, type: 'assign', level: symbol.level, variable: symbol.variable });
+                    block.codes.push({ line: scanner.line, type: 'assign', level: symbol.level, variable: symbol.name });
 
                 }
             } else if (scanner.next === 'LOCAL') {
@@ -627,7 +628,7 @@ Parser.prototype = {
                     if (!symbol) {
                         throw parserError(scanner, 'Symbol does not exist?');
                     }
-                    block.codes.push({ line: scanner.line, type: 'assign', level: symbol.level, variable: symbol.variable });
+                    block.codes.push({ line: scanner.line, type: 'assign', level: symbol.level, variable: symbol.name });
                 }
                 block.codes.push({ line: scanner.line, type: 'breakRoutine' });
             } else if (scanner.next === 'YIELD') {
@@ -709,7 +710,7 @@ Parser.prototype = {
         if (args) {
             for (var i=0, length=args.length; i<length; ++i) {
                 var symbol = this.search(args[i]);
-                block.codes.push({ line: scanner.line, type: 'assign', level: symbol.level, variable: symbol.variable });
+                block.codes.push({ line: scanner.line, type: 'assign', level: symbol.level, variable: symbol.name });
             }
         }
         this.parseStatements(block);
