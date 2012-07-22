@@ -33,9 +33,15 @@ var DanmakuJS = function() {
         window.addEventListener('resize', this.onResized, false);
         that.setDebug(options.debug);
         that.mainLoop();
-        
-        var danmakufu = Danmakufu.loadFile('sample.txt');
+
+        that.testDanmakufu('sample.txt');
+    };
+
+    this.testDanmakufu = function(file) {
+        var danmakufu = Danmakufu.loadFile(file);
         danmakufu.execute();
+        var main = new danmakufuScripts.script_enemy_main();
+        main.Initialize();
     };
 
     this.setDebug = function(debug) {

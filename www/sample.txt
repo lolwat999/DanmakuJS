@@ -15,6 +15,7 @@ script_enemy_main {
     let d = true;
 
     @Initialize {
+        print("Hello, world!");
         let c = a + b + 32 + 40;
         print(c);
         print(d);

@@ -12,10 +12,11 @@ var Translator = function(blocks) {
     this.functions = global.danmakufuScripts.__functions__;
     this.blocks.forEach(function(block) {
         if (block.kind === 'namespace') {
-            this.footer = 'this.danmakufuScripts["' + block.name + '"]=' + block.name + '\n' + this.footer;
+            this.footer = 'this.danmakufuScripts["' + block.name + '"]=' + block.name + ';\n' + this.footer;
         }
     }, this);
     this.result = this.header + this.addJSBlock(0) + this.footer;
+    console.log(this.result);
 };
 
 Translator.prototype = {
@@ -82,7 +83,7 @@ Translator.prototype = {
     },
 
     translateCode: function(block, code) {
-        return this[code.type] ? this[code.type](block, code) : '';
+        return code && this[code.type] ? this[code.type](block, code) : '';
     },
 
     assign: function(block, code) {
@@ -103,8 +104,8 @@ Translator.prototype = {
         }
         var args = [];
         var newCode = block.codes.pop();
-        while (newCode.type === 'pushVariable') {
-            args.push(newCode.variable);
+        for (var i=0, length=code.args; i<length; ++i) {
+            args.push(newCode.value !== undefined ? newCode.value : newCode.variable);
             newCode = block.codes.pop();
         }
         block.codes.push(newCode);
@@ -137,7 +138,7 @@ var operationsToStr = {
 
 for (var i in operationsToStr) {
     (function(i) {
-        operations[i] = function(left, right) {
+        operations[i] = function(right, left) {
             return left + operationsToStr[i] + right;
         };
     })(i);
