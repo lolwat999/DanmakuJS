@@ -66,6 +66,7 @@ var TokenKind = {
     'comment': '#',
     'real': /[0-9]+("."[0-9]+)?\b/,
     'string': /".*?"/,
+    'bool': /true|false/,
     'word': /\w+\b/,
 
     'invalid': null

@@ -5,17 +5,17 @@ var global = this;
     
 var Translator = function(blocks) {
     this.blocks = blocks;
-    this.functions = {};
     this.header = '(function() {\n';
     this.footer = '})();';
+    global.danmakufuScripts = global.danmakufuScripts || {};
+    global.danmakufuScripts.__functions__ = global.danmakufuScripts.__functions__ || {};
+    this.functions = global.danmakufuScripts.__functions__;
     this.blocks.forEach(function(block) {
         if (block.kind === 'namespace') {
             this.footer = 'this.danmakufuScripts["' + block.name + '"]=' + block.name + '\n' + this.footer;
         }
     }, this);
     this.result = this.header + this.addJSBlock(0) + this.footer;
-    global.danmakufuScripts = global.danmakufuScripts || {};
-    global.danmakufuScripts.__functions__ = this.functions;
 };
 
 Translator.prototype = {
@@ -40,6 +40,10 @@ Translator.prototype = {
                 }
             }
             block.jsString = this.translateBlock(block);
+        } else {        
+            this.functions[block.name] = function() {
+                block.func.apply(null, arguments);
+            };
         }
         return block.jsString;
     },
@@ -109,47 +113,34 @@ Translator.prototype = {
 
     operation: function(block, code) {
         var values = [];
-        var type = code.name;
         for (var i=0, length=code.clauses; i<length; ++i) {
             var newCode = block.codes.pop();
-            var value = newCode.value !== undefined ? newCode.value : newCode.variable;
-            values.push(value);
+            if (newCode.type === 'operation') {
+                values.push(this.operation(block, newCode));
+            } else {
+                values.push(newCode.value !== undefined ? newCode.value : newCode.variable);
+            }
         }
-        return operations[code.name](values);
+        return operations[code.name].apply(operations[code.name], values);
     }
 };
 
-var operations = {
-    add: function(values) {
-        return getOperationStr(values, '+');
-    },
+var operations = { };
 
-    subtract: function(values) {
-        return getOperationStr(values, '-');
-    },
-
-    divide: function(values) {
-        return getOperationStr(values, '/');
-    },
-
-    multiply: function(values) {
-        return getOperationStr(values, '*');
-    },
-
-    remainder: function(values) {
-        return getOperationStr(values, '%');
-    }
+var operationsToStr = {
+    add: '+',
+    subtract: '-',
+    divide: '/',
+    multiply: '*',
+    remainder: '%'
 };
 
-var getOperationStr = function(values, op) {
-    var str = '';
-    values.forEach(function(value, index) {
-        str += value;
-        if (index !== values.length - 1) {
-            str += op;
-        }
-    })
-    return str;
+for (var i in operationsToStr) {
+    (function(i) {
+        operations[i] = function(left, right) {
+            return left + operationsToStr[i] + right;
+        };
+    })(i);
 }
 
 var clone = function(obj) {

@@ -59,6 +59,9 @@ Scanner.prototype = {
                     if (kind === 'real') {
                         token = parseFloat(token);
                     }
+                    if (kind === 'bool') {
+                        token = JSON.parse(token);
+                    }
                     this.word = token;
                     break;
                 }

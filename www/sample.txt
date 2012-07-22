@@ -12,14 +12,16 @@ script_enemy_main {
     let testing = "huh what?";
     let a = 20;
     let b = 22;
+    let d = true;
 
     @Initialize {
-        let c = a + b;
+        let c = a + b + 32 + 40;
         print(c);
+        print(d);
     }
 
     @MainLoop {
-    
+        
     }
 
     @DrawLoop {

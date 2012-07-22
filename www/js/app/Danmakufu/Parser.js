@@ -203,6 +203,13 @@ Parser.prototype = {
                 type: 'pushValue'
             });
             scanner.advance();
+        } else if (scanner.next === 'bool') {
+            block.codes.push({
+                line: scanner.line,
+                value: scanner.word,
+                type: 'pushValue'
+            });
+            scanner.advance();
         } else if (scanner.next === 'word') {
             var symbol = this.search(scanner.word);
             if (!symbol) {
