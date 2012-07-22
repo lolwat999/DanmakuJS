@@ -126,7 +126,11 @@ Translator.prototype = {
     }
 };
 
-var operations = { };
+var operations = { 
+    concatenate: function(right, left) {
+        return operations.add(right, left);
+    }
+};
 
 var operationsToStr = {
     add: '+',

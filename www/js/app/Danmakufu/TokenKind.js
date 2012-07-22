@@ -62,9 +62,8 @@ var TokenKind = {
     'at': '@',
     'vertical': '|',
     'ampersand': '&',
-
     'comment': '#',
-    'real': /[0-9]+("."[0-9]+)?\b/,
+    'real': /^(\+|-)?\d+(\.\d+)?$/,
     'string': /".*?"/,
     'bool': /true|false/,
     'word': /\w+\b/,

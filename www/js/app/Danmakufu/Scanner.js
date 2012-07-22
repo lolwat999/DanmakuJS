@@ -15,7 +15,7 @@ var Scanner = function(options) {
     this.tokens = options.tokens || [];
     if (!this.tokens.length) {
         this.lines.forEach(function(line, index) {
-            this.tokens[index] = line.split(/(".*?"|[$-\/:-?{-~!"^`\[\]#@]|\s+)/g).filter(function(word) {
+            this.tokens[index] = line.split(/(".*?"|[$-\-:-?{-~!"^`\[\]#\\@]|\s+)/g).filter(function(word) {
                 return word.match(/\S+/);
             });
         }, this);
@@ -42,6 +42,13 @@ Scanner.prototype = {
         }
         if (token) {
             var next = null;
+            if (OperatorTypes[token] && this.current + 1 < this.currentLine.length) {
+                var nextToken = this.currentLine[this.current + 1];
+                if (nextToken === '=') {
+                    ++this.current;
+                    token += nextToken;
+                }
+            }
             for (var kind in TokenKind) {
                 var type = TokenKind[kind];
                 if ((type instanceof RegExp && token.match(type)) || type === token || this.inComment) {
@@ -77,6 +84,15 @@ Scanner.prototype = {
     clone: function() {
         return new Scanner(this);
     }
+};
+
+var OperatorTypes = {
+    '+': true,
+    '-': true,
+    '/': true,
+    '*': true,
+    '~': true,
+    '%': true
 };
 
 return Scanner;
