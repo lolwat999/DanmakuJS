@@ -8,12 +8,8 @@ var ScriptEngine = function(source, functions) {
     this.mainBlock = { level: 0, kind: 'normal', codes: [], name: '__global__' };
     this.blocks = [ this.mainBlock ];
 
-    try {
         this.parser = new Parser(this.mainBlock, this.blocks, source, functions);
         this.events = this.parser.events;
-    } catch (error) {
-        this.handleError(error);
-    }
 };
 
 ScriptEngine.prototype = {

@@ -42,9 +42,10 @@ Scanner.prototype = {
         }
         if (token) {
             var next = null;
-            if (OperatorTypes[token] && this.current + 1 < this.currentLine.length) {
+            var isOperator = OperatorTypes[token], isComparison = ComparisonTypes[token];
+            if ((isOperator || isComparison) && this.current + 1 < this.currentLine.length) {
                 var nextToken = this.currentLine[this.current + 1];
-                if (nextToken === '=') {
+                if (nextToken === '=' || (isComparison && nextToken === token)) {
                     ++this.current;
                     token += nextToken;
                 }
@@ -85,6 +86,15 @@ Scanner.prototype = {
         return new Scanner(this);
     }
 };
+
+var ComparisonTypes = {
+    '&': true,
+    '|': true,
+    '!': true,
+    '=': true,
+    '<': true,
+    '>': true
+}
 
 var OperatorTypes = {
     '+': true,

@@ -20,8 +20,14 @@ script_enemy_main {
         let c = a + b + 32 + 40;
         c += 20;
         let wat2 = testing ~ " " ~ wat;
-        print(c);
-        print(wat2);
+        if (a <= 18 || b >= 20 && d == true) {
+            print(c);
+            print(wat2);
+        } else if (d == false) {
+            print("wat???");
+        } else {
+            print("huh??");
+        }
     }
 
     @MainLoop {

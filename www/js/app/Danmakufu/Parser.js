@@ -180,6 +180,7 @@ Parser.prototype = {
         if (scanner.next !== 'openParen') {
             throw parserError(scanner, '\"(\" is required.');
         }
+        scanner.advance();
         this.parseExpression(block);
         if (scanner.next !== 'closeParen') {
             throw parserError(scanner, '\")\" is required.');
@@ -347,11 +348,7 @@ Parser.prototype = {
             var type = scanner.next;
             scanner.advance();
             this.parseSum(block);
-            this.writeOperation(block, 'compare', 2);
-            block.codes.push({
-                line: scanner.line,
-                type: type
-            });
+            this.writeOperation(block, type, 2);
         }
     },
 
@@ -359,12 +356,9 @@ Parser.prototype = {
         var scanner = this.scanner;
         this.parseComparison(block);
         while (scanner.next === 'and' || scanner.next === 'or') {
-            var command = (scanner.next === 'and') ? 'ifNot' : 'if';
+            this.writeOperation(block, scanner.next, 2);
             scanner.advance();
-            block.codes.push({ line: scanner.line, type: 'dup' });
-            block.codes.push({ line: scanner.line, type: 'caseBegin' });
-            block.codes.push({ line: scanner.line, type: 'command' });
-            block.codes.push({ line: scanner.line, type: 'caseEnd' });
+            this.parseComparison(block);
         }
     },
 
@@ -572,13 +566,13 @@ Parser.prototype = {
                 this.parseInlineBlock(block, 'normal');
                 while (scanner.next === 'ELSE') {
                     scanner.advance();
-                    block.codes.push({ line: scanner.line, type: 'caseNext' });
                     if (scanner.next === 'IF') {
                         scanner.advance();
                         this.parseParentheses(block);
-                        block.codes.push({ line: scanner.line, type: 'caseIfNot' });
+                        block.codes.push({ line: scanner.line, type: 'caseElseIf' });
                         this.parseInlineBlock(block, 'normal');
                     } else {
+                        block.codes.push({ line: scanner.line, type: 'caseNext' });
                         this.parseInlineBlock(block, 'normal');
                         break;
                     }
@@ -701,6 +695,7 @@ Parser.prototype = {
     },
 
     parseInlineBlock: function(block, blockKind) {
+        var scanner = this.scanner;
         var block = newBlock(this.blocks, block.level + 1, blockKind);
         this.parseBlock(block, null, false);
         block.codes.push({ line: scanner.line, type: 'call', block: block, length: 0 });

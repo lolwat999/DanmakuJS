@@ -36,7 +36,8 @@ Translator.prototype = {
             block.children = [];
             for (var i=index, length=this.blocks.length; i<length; ++i) {
                 var childBlock = this.blocks[i];
-                if (childBlock.level === block.level + 1) {
+                if (childBlock.level === block.level + 1 && !childBlock.parent) {
+                    childBlock.parent = block;
                     block.children.push(childBlock);
                 }
             }
@@ -51,11 +52,15 @@ Translator.prototype = {
 
     translateBlock: function(block) {
         var jsString = '';
+        var after = false;
         while (block.codes.length) {
             var code = block.codes.pop();
-            var str = this.translateCode(block, code);
-            if (str) {
-                jsString = str + ';\n' + jsString;
+            if (code) {
+                var str = this.translateCode(block, code);
+                if (str) {
+                    var semicolon = code.noSemicolon ? ' ' : ';\n';
+                    jsString = str + semicolon + jsString;
+                }
             }
         }
         block.children.forEach(function(childBlock) {
@@ -69,6 +74,8 @@ Translator.prototype = {
             return '';
         } else if (block.kind === 'sub') {
             return 'this.' + block.name + ' = function() {\n';
+        } else if (block.kind === 'normal') {
+            return '{\n';
         } else {
             return 'function ' + block.name + '() {\n';
         }
@@ -77,6 +84,8 @@ Translator.prototype = {
     blockEnd: function(block) {
         if (block.name === '__global__') {
             return '';
+        } else if (block.kind === 'normal') {
+            return '}\n';
         } else {
             return '};\n';
         }
@@ -97,19 +106,22 @@ Translator.prototype = {
     },
 
     call: function(block, code) {
-        if (code.value.func) {
-            this.functions[code.value.name] = function() {
-                code.value.func.apply(null, arguments);
-            };
+        if (code.value) {
+            if (code.value.func) {
+                this.functions[code.value.name] = function() {
+                    code.value.func.apply(null, arguments);
+                };
+            }
+            var args = [];
+            var newCode = block.codes.pop();
+            for (var i=0, length=code.args; i<length; ++i) {
+                args.push(newCode.value !== undefined ? newCode.value : newCode.variable);
+                newCode = block.codes.pop();
+            }
+            block.codes.push(newCode);
+            return 'danmakufuScripts.__functions__["' + code.value.name + '"](' + args.join(',') + ')';
         }
-        var args = [];
-        var newCode = block.codes.pop();
-        for (var i=0, length=code.args; i<length; ++i) {
-            args.push(newCode.value !== undefined ? newCode.value : newCode.variable);
-            newCode = block.codes.pop();
-        }
-        block.codes.push(newCode);
-        return 'danmakufuScripts.__functions__["' + code.value.name + '"](' + args.join(',') + ')';
+        return '';
     },
 
     operation: function(block, code) {
@@ -119,31 +131,82 @@ Translator.prototype = {
             if (newCode.type === 'operation') {
                 values.push(this.operation(block, newCode));
             } else {
-                values.push(newCode.value !== undefined ? newCode.value : newCode.variable);
+                var value = newCode.value !== undefined ? newCode.value : newCode.variable;
+                if (value !== undefined) {
+                    values.push(value);
+                } else {
+                    block.codes.push(newCode);
+                }
             }
         }
         return operations[code.name].apply(operations[code.name], values);
+    },
+
+    caseIfNot: function(block, code) {
+        return this.ifStatement(block, code, 'if')
+    },
+
+    caseNext: function(block, code) {
+        return this.ifStatement(block, code, 'else');
+    },
+
+    caseElseIf: function(block, code) {
+        return this.ifStatement(block, code, 'else if');
+    },
+
+    ifStatement: function(block, code, type) {
+        var bracketBegin = '', bracketEnd = '';
+        code.noSemicolon = true;
+        var next, str = '';
+        if (type.indexOf('if') !== -1) {
+            bracketBegin = '(';
+            bracketEnd = ')';
+        }
+        do {
+            next = block.codes.pop();
+            if (next && next.type.indexOf('case') === -1) {
+                str += this.translateCode(block, next);
+            } else {
+                block.codes.push(next);
+            }
+        } while (next && next.type.indexOf('case') === -1);
+        return type + ' ' + bracketBegin + str + bracketEnd + this.addJSBlock(block.children.pop());
     }
 };
 
-var operations = { 
-    concatenate: function(right, left) {
-        return operations.add(right, left);
-    }
+var operations = {
+
 };
 
 var operationsToStr = {
     add: '+',
+    concatenate: '+',
     subtract: '-',
     divide: '/',
     multiply: '*',
-    remainder: '%'
+    remainder: '%',
+    equal: '===',
+    greater: '>',
+    less: '<',
+    not: '!',
+    notEqual: '!==',
+    greaterEqual: '>=',
+    lessEqual: '<=',
+    and: '&&',
+    or: '||'
 };
 
 for (var i in operationsToStr) {
     (function(i) {
         operations[i] = function(right, left) {
-            return left + operationsToStr[i] + right;
+            var str = operationsToStr[i];
+            if (left !== undefined) {
+                str = left + str;
+            }
+            if (right !== undefined) {
+                str += right;
+            }
+            return str;
         };
     })(i);
 }
