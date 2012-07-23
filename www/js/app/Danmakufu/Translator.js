@@ -37,7 +37,7 @@ Translator.prototype = {
             block = clone(block);
             block.codes = clone(block.codes);
             if (!block.children) {
-            block.children = [];
+                block.children = [];
                 for (var i=index, length=this.blocks.length; i<length; ++i) {
                     var childBlock = this.blocks[i];
                     if (childBlock.level === block.level + 1 && !childBlock.parent) {
@@ -49,7 +49,7 @@ Translator.prototype = {
             block.jsString = this.translateBlock(block);
         } else {        
             Functions[block.name] = function() {
-                return block.func.apply(null, arguments);
+                block.func.apply(null, arguments);
             };
         }
         return block.jsString;
@@ -76,7 +76,7 @@ Translator.prototype = {
     },
 
     blockStart: function(block) {
-        var args = this.getArguments(block, block.arguments);
+        var args = this.getArguments(block, block.args);
         var start = block.level === 1 ? 'Container.' + block.name + ' = ' : '';
         if (block.name === '__global__') {
             return '';
@@ -226,7 +226,8 @@ Translator.prototype = {
         } while (next && next.type.indexOf('case') === -1);
         str += this.variables.join(' ');
         this.variables = [];
-        return type + ' ' + bracketBegin + str + bracketEnd + this.addJSBlock(block.children.shift());
+        var childBlock = block.children.shift();
+        return type + ' ' + bracketBegin + str + bracketEnd + this.addJSBlock(childBlock);
     },
 
     loopIf: function(block, code) {
@@ -241,24 +242,26 @@ Translator.prototype = {
     loopAscent: function(block, code) {
         var end = this.variables.pop();
         var start = this.variables.pop();
-        return this.loopStatement(block, start, end, true);
+        return this.loopStatement(block, start, end, code.variable);
     },
 
     loopDescent: function(block, code) {
         var start = this.variables.pop();
         var end = this.variables.pop();
-        return this.loopStatement(block, start - 1, end, true, '--', '>=');
+        return this.loopStatement(block, start - 1, end, code.variable, '--', '>=');
     },
 
-    loopStatement: function(block, start, end, unshift, increment, compare) {
+    loopStatement: function(block, start, end, id, increment, compare) {
         increment = increment || '++';
-        var id = '__i';
         var childBlock = block.children.shift();
         compare = compare || '<';
-        if (unshift) {
-            childBlock.codes.unshift({ type: 'pushVariable', variable: id });
+        if (id) {
+            childBlock.codes.shift();
+        } else {
+            id = '__i';
         }
-        return 'for (var ' + id + ' = ' + start + '; ' + id + compare + end + '; ' + id + 
+        var declare = 'var ' + id + ' = ' + start ;
+        return 'for (' + declare + '; ' + id + compare + end + '; ' + id + 
             increment + ')' + this.addJSBlock(childBlock);
     },
 

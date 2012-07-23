@@ -74,13 +74,13 @@ Parser.prototype = {
                     };
                     symbol.sub.name = scanner.word;
                     symbol.sub.func = null;
-                    symbol.sub.arguments = 0;
+                    symbol.sub.args = 0;
                     currentScope.scope[scanner.word] = symbol;
                     scanner.advance();
                     if (kind !== 'sub' && scanner.next === 'openParen') {
                         scanner.advance();
                         while (scanner.next === 'word' || scanner.next === 'LET' || scanner.next === 'REAL') {
-                            ++symbol.sub.arguments;
+                            ++symbol.sub.args;
                             if (scanner.next === 'LET' || scanner.next === 'REAL') {
                                 scanner.advance();
                             }
@@ -138,7 +138,7 @@ Parser.prototype = {
         } else if (func.func) {
             symbol.sub = newBlock(blocks, 0, 'function');
             symbol.sub.func = func.func;
-            symbol.sub.arguments = func.arguments;
+            symbol.sub.args = func.args;
             symbol.sub.name= func.name;
         }
         this.frame[0].scope[func.name] = symbol;
@@ -223,13 +223,13 @@ Parser.prototype = {
                     throw parserError(scanner, 'Sub is not a function.');
                 }
                 var argc = this.parseArguments(block);
-                if (symbol.sub.arguments !== undefined && argc !== symbol.sub.arguments) {
+                if (symbol.sub.args !== undefined && argc !== symbol.sub.args) {
                     throw parserError(scanner, 'Mismatched arguments on: ' + symbol.sub.name);
                 }
                 block.codes.push({
                     line: scanner.line,
                     value: symbol.sub,
-                    arguments: argc,
+                    args: argc,
                     type: 'callAndPushResult'
                 });
             } else {
@@ -322,6 +322,7 @@ Parser.prototype = {
             var operation = (scanner.next === 'asterisk') ? 'multiply' : 
                 ((scanner.next === 'slash') ? 'divide' : 'remainder');
             scanner.advance();
+            this.parsePrefix(block);
             this.writeOperation(block, operation, 2);
         }
     },
@@ -444,7 +445,7 @@ Parser.prototype = {
                         throw parserError(scanner, '...?');
                     }
                     var argc = this.parseArguments(block);
-                    if (symbol.sub.arguments !== undefined && argc !== symbol.sub.arguments) {
+                    if (symbol.sub.args !== undefined && argc !== symbol.sub.args) {
                         throw parserError(scanner, 'Wrong number of arguments: ' + symbol.sub.name);
                     }
                     block.codes.push({ line: scanner.line, type: 'call', 
@@ -537,11 +538,12 @@ Parser.prototype = {
                     scanner.advance();
                 }
                 var length = block.codes.length;
-                block.codes.push({ line: scanner.line, type: back ? 'loopDescent' : 'loopAscent' });
+                block.codes.push({ line: scanner.line, type: back ? 'loopDescent' : 'loopAscent', variable: word });
                 var nextBlock = newBlock(blocks, block.level + 1, 'loop');
-                var counter = [];
-                counter.push(word);
-                this.parseBlock(nextBlock, counter, false);
+                nextBlock.parent = block;
+                block.children = block.children || [];
+                block.children.push(nextBlock);
+                this.parseBlock(nextBlock, [ word ], false);
                 needSemicolon = false;
             } else if (scanner.next === 'IF') {
                 scanner.advance();
@@ -672,7 +674,7 @@ Parser.prototype = {
         var scanner = this.scanner;
         var childBlock = newBlock(this.blocks, block.level + 1, blockKind);
         block.children = block.children || [];
-        block.children.unshift(childBlock);
+        block.children.push(childBlock);
         childBlock.parent = block;
         this.parseBlock(childBlock, null, false);
     },

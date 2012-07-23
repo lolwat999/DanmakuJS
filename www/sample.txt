@@ -16,8 +16,13 @@ script_enemy_main {
     }
 
     @MainLoop {
-        if (frame == 60) {
-            CreateShot01(GetX, GetY, 10, 0, RED01, 10);
+        CreateShot01(GetX, GetY, 10, rand(0, 360), RED01, 10);
+        if (frame % 30 == 0) {
+            let angleMax = 360;
+            let high = 10;
+            ascent (i in 0..10) {
+                CreateShot01(GetX, GetY, 10, (angleMax / high) * i + (frame % 360), BLUE01, 10);
+            }
         }
         frame++;
     }

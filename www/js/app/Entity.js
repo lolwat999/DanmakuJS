@@ -87,8 +87,8 @@ var Entity = Class.extend({
             this.xSpeed = this.speed * Math.cos(radianAngle);
             this.ySpeed = this.speed * Math.sin(radianAngle);
         }
-        this.x += this.xSpeed * delta * 50;
-        this.y -= this.ySpeed * delta * 50;
+        this.x += this.xSpeed;
+        this.y -= this.ySpeed;
         if (this.model) {
             this.model.rotation = (Math.PI * 2) - radianAngle;
             this.model.position.x = this.x + parentX;

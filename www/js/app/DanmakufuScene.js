@@ -21,7 +21,7 @@ var DanmakufuScene = GameScene.extend({
         this.foreground.uiFrame = new Entity({ x: 0, y: 0, image: 'frame.png' });
         this.foreground.add(this.foreground.uiFrame);
         
-        this.danmakufu = Danmakufu.loadFile(file, {
+        var functions = {
             // Global functions
             LoadGraphic: function(file) {
                 that.enemy.setImage(file);
@@ -40,6 +40,9 @@ var DanmakufuScene = GameScene.extend({
             },
 
             CreateShot01: function(x, y, speed, angle, image, timeout) {
+                if (!that.enemy.alive) {
+                    return;
+                }
                 setTimeout(function() {
                     that.add(new Bullet({
                         x: x, y: y, speed: speed, 
@@ -47,11 +50,10 @@ var DanmakufuScene = GameScene.extend({
                         owner: that.enemy, life: 10000
                     }));
                 }, timeout);
-            },
+            }
+        };
 
-            // Constants
-            RED01: 'bullets/circleredsm.png'
-        });
+        this.danmakufu = Danmakufu.loadFile(file, functions);
 
         this.danmakufu.execute(function(script) {
             that.main = new script.script_enemy_main();
