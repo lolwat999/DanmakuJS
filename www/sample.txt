@@ -9,58 +9,11 @@
 #ScriptVersion[2]
 
 script_enemy_main {
-    let testing = "huh"; 
-    let wat = "wat?";
-    let a = 19.5;
-    let b = 22.5;
-    let d = true;
-    let arr = [ 10, 20, 30, 40, 50, 60 ];
     let frame = 0;
 
     @Initialize {
-        print("Hello, world!");
-        let c = a + b + 32 + 40;
-        c += 20;
-        c++;
-        let wat2 = testing ~ " " ~ wat;
-        
-        if (a <= 18 || b >= 20 && d == true) {
-            print(c);
-            print(wat2);
-        } else if (d == false) {
-            print("wat???");
-        } else {
-            print("huh??");
-        }
-
-        let e = 5;
-
-        loop (3) {
-            print(e + 5);
-        }
-
-        descent (i in 0..5) {
-            print(arr[i + 1]);            
-        }
-
-        while (e > 0) {
-            e--;
-            print(e);
-        }
-
-        printStuff(55);
-        theMeaningOfLife;
-
-        alternative (e)
-        case (0) {
-            print("0!");
-        }
-        case (5) {
-            print("5!");
-        }
-        others {
-            print(e);
-        }
+        LoadGraphic("characters/marisa.png");
+        let test = RED01;
     }
 
     @MainLoop {

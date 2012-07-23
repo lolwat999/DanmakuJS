@@ -22,16 +22,11 @@ var Entity = Class.extend({
         this.ySpeed = options.ySpeed || 0;
         this.x = options.x || 0;
         this.y = options.y || 0;
-        this.image = options.image;
-        var map = Entity.imageMapCache.load('img/' + this.image);
-        this.model = options.model || new THREE.Sprite({
-            color: options.color || 0xFFFFFF, map: map,
-            useScreenCoordinates: false
-        });
-        var parentX = this.parent ? this.parent.x : 0;
-        var parentY = this.parent ? this.parent.y : 0;
-        this.model.position.x = this.x + parentX;
-        this.model.position.y = this.y + parentY;
+        if (options.image && !options.model) {
+            this.setImage(options.image, options.color);
+        } else if (options.model) {
+            this.model = options.model;
+        }
         this.alive = true;
         this.parent = options.parent || null;
         this.state = options.state || null;
@@ -53,12 +48,21 @@ var Entity = Class.extend({
     },
 
     setImage: function(image, color) {
-        this.image = options.image;
+        this.image = image;
         var map = Entity.imageMapCache.load('img/' + this.image);
-        this.model = options.model || new THREE.Sprite({
+        this.model = new THREE.Sprite({
             color: color || this.color || 0xFFFFFF, map: map,
             useScreenCoordinates: false
         });
+        var parentX = this.parent ? this.parent.x : 0;
+        var parentY = this.parent ? this.parent.y : 0;
+        this.model.position.x = this.x + parentX;
+        this.model.position.y = this.y + parentY;
+        var state = this.state;
+        if (state) {
+            state.remove(this);
+            state.add(this);
+        }
     },
 
     add: function(entity) {
@@ -83,14 +87,16 @@ var Entity = Class.extend({
             this.xSpeed = this.speed * Math.cos(radianAngle);
             this.ySpeed = this.speed * Math.sin(radianAngle);
         }
-        this.model.rotation = (Math.PI * 2) - radianAngle;
         this.x += this.xSpeed * delta * 50;
         this.y -= this.ySpeed * delta * 50;
-        this.model.position.x = this.x + parentX;
-        this.model.position.y = this.y + parentY;
-        var ratio = this.model.map.image.width / this.model.map.image.height;
-        this.model.scale.x = this.xScale * ratio;
-        this.model.scale.y = this.yScale;
+        if (this.model) {
+            this.model.rotation = (Math.PI * 2) - radianAngle;
+            this.model.position.x = this.x + parentX;
+            this.model.position.y = this.y + parentY;
+            var ratio = this.model.map.image.width / this.model.map.image.height;
+            this.model.scale.x = this.xScale * ratio;
+            this.model.scale.y = this.yScale;
+        }
         if (!this.disableTasks && this.tasks) {
             this.tasks.update(delta, this);
         }

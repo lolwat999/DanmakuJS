@@ -20,7 +20,13 @@ var toSymbols = function(functions) {
     var arr = [];
     for (var i in functions) {
         if (functions.hasOwnProperty(i)) {
-            arr.push({ name: i, func: functions[i] });
+            var obj = { name: i };
+            if (typeof functions[i] === 'function') {
+                obj.func = functions[i];
+            } else {
+                obj.constant = functions[i];
+            }
+            arr.push(obj);
         }
     }
     return arr;

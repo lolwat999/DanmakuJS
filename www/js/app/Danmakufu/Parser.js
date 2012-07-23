@@ -134,12 +134,16 @@ Parser.prototype = {
         var blocks = this.blocks;
         var symbol = {
             level: 0,
-            sub: newBlock(blocks, 0, 'function'),
             variable: -1
         };
-        symbol.sub.arguments = func.arguments;
-        symbol.sub.name= func.name;
-        symbol.sub.func = func.func;
+        if (func.constant) {
+            symbol.name = '"' + func.constant + '"';
+        } else if (func.func) {
+            symbol.sub = newBlock(blocks, 0, 'function');
+            symbol.sub.func = func.func;
+            symbol.sub.arguments = func.arguments;
+            symbol.sub.name= func.name;
+        }
         this.frame[0].scope[func.name] = symbol;
     },
 
