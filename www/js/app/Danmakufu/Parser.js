@@ -1,4 +1,3 @@
-if (typeof define !== 'function') { var define = (require('amdefine'))(module); }
 define(function(require) {
 
 var Scanner = require('./Scanner');
@@ -64,8 +63,8 @@ Parser.prototype = {
                     if (currentScope.scope[scanner.word]) {
                         throw parserError(scanner, 'A routine is defined twice.');
                     }
-                    var kind = (type === 'sub' || type === 'at') ? 'sub' : 
-                        (type === 'function' ? type : 'microthread');
+                    var kind = (type === 'SUB' || type === 'at') ? 'sub' : 
+                        (type === 'FUNCTION' ? 'function' : 'microthread');
                     var symbol = {
                         level: level,
                         sub: newBlock(blocks, level + 1, kind),
@@ -75,16 +74,17 @@ Parser.prototype = {
                     };
                     symbol.sub.name = scanner.word;
                     symbol.sub.func = null;
+                    symbol.sub.arguments = 0;
                     currentScope.scope[scanner.word] = symbol;
                     scanner.advance();
-                    if (kind !== 'sub' &&  scanner.next === 'openParen') {
+                    if (kind !== 'sub' && scanner.next === 'openParen') {
                         scanner.advance();
-                        while (scanner.next === 'string' || scanner.next === 'LET' || scanner.next === 'REAL') {
+                        while (scanner.next === 'word' || scanner.next === 'LET' || scanner.next === 'REAL') {
                             ++symbol.sub.arguments;
                             if (scanner.next === 'LET' || scanner.next === 'REAL') {
                                 scanner.advance();
                             }
-                            if (scanner.next === 'string') {
+                            if (scanner.next === 'word') {
                                 scanner.advance();
                             }
                             if (scanner.next !== 'comma') {
@@ -662,9 +662,9 @@ Parser.prototype = {
                         }
                         scanner.advance();
                     }
-                    this.parseBlock(symbol.sub, args, symbol.sub.kind === 'function');
-                    needSemicolon = false;
                 }
+                this.parseBlock(symbol.sub, args, symbol.sub.kind === 'function');
+                needSemicolon = false;
             } else if (scanner.next === 'comment') {
                 this.comments.push({ line: scanner.line, description: scanner.word });
                 scanner.advance();

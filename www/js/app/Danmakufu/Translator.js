@@ -1,5 +1,3 @@
-if (typeof define !== 'function') { var define = (require('amdefine'))(module); }
-
 define('Functions', function() {
     return {};
 });
@@ -10,8 +8,7 @@ var Functions = require('Functions');
     
 var Translator = function(blocks, filename) {
     this.blocks = blocks;
-    this.header = 'if (typeof define !== \'function\') { var define = (require(\'amdefine\'))(module); }\n' +
-                  'define(\'danmakufu/' + filename + '\', function(require) {\n' +
+    this.header = 'define(\'danmakufu/' + filename + '\', function(require) {\n' +
                   'var __functions__ = require(\'Functions\');\n' +
                   'var Container = {};\n'
     this.footer = 'return Container;\n});';
@@ -53,6 +50,7 @@ Translator.prototype = {
     translateBlock: function(block) {
         var jsString = '';
         var after = false;
+        var start = this.blockStart(block), end = this.blockEnd(block);
         while (block.codes.length) {
             var code = block.codes.shift();
             if (code) {
@@ -66,19 +64,43 @@ Translator.prototype = {
         block.children.forEach(function(childBlock) {
             jsString += this.addJSBlock(childBlock);
         }, this);
-        return this.blockStart(block) + jsString + this.blockEnd(block);
+        return start + jsString + end;
     },
 
     blockStart: function(block) {
+        var args = this.getArguments(block, block.arguments);
+        var start = block.level === 1 ? 'Container.' + block.name + ' = ' : '';
         if (block.name === '__global__') {
             return '';
-        } else if (block.kind === 'sub') {
-            return 'this.' + block.name + ' = function() {\n';
-        } else if (block.kind === 'namespace') {
-            return 'Container.' + block.name + ' = function() {\n';
+        } else if (block.kind === 'namespace' || (block.level === 1 && FunctionTypes[block.kind])) {
+            if (FunctionTypes[block.kind]) {
+                start = 'var ' + block.name + ' = ' + start;
+            }
+            return start + 'function(' + args + ') {\n';
+        } else if (FunctionTypes[block.kind]) {
+            if (block.parent.kind === 'namespace') {
+                start = 'this.';
+            } else {
+                start = 'var ';
+            }
+            return start + block.name + ' = function(' + args + ') {\n';
         } else {
             return '{\n';
         }
+    },
+
+    getArguments: function(block, num) {
+        if (num) {
+            var args = [];
+            for (var i=0; i<num; ++i) {
+                var next = block.codes.shift();
+                if (next && next.variable) {
+                    args.push(next.variable);
+                }
+            }
+            return args.join(',');
+        }
+        return '';
     },
 
     blockEnd: function(block) {
@@ -114,6 +136,7 @@ Translator.prototype = {
 
     call: function(block, code) {
         if (code.value) {
+            var functionCall = code.value.func ? '__functions__["' + code.value.name + '"]' : code.value.name;
             if (code.value.func) {
                 Functions[code.value.name] = function() {
                     code.value.func.apply(null, arguments);
@@ -124,7 +147,7 @@ Translator.prototype = {
             for (var i=0, length=code.args; i<length; ++i) {
                 args.push(this.variables.pop());
             }
-            return '__functions__["' + code.value.name + '"](' + args.join(',') + ')';
+            return functionCall + '(' + args.join(',') + ')';
         }
         return '';
     },
@@ -235,6 +258,12 @@ var operationsToStr = {
     or: '||',
     successor: '++',
     predecessor: '--'
+};
+
+var FunctionTypes = {
+    sub: 'true',
+    function: 'true',
+    microthread: 'true'
 };
 
 for (var i in operationsToStr) {

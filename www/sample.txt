@@ -45,6 +45,8 @@ script_enemy_main {
             e--;
             print(e);
         }
+
+        printStuff(55);
     }
 
     @MainLoop {
@@ -62,4 +64,8 @@ script_enemy_main {
     @BackGround {
 
     }
+}
+
+function printStuff(d) {
+    print(d);
 }
