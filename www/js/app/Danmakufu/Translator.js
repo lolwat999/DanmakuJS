@@ -1,23 +1,22 @@
 if (typeof define !== 'function') { var define = (require('amdefine'))(module); }
+
+define('Functions', function() {
+    return {};
+});
+
 define(function(require) {
 
-var global = this;
+var Functions = require('Functions');
     
-var Translator = function(blocks) {
+var Translator = function(blocks, filename) {
     this.blocks = blocks;
-    this.header = '(function() {\n';
-    this.footer = '})();';
-    global.danmakufuScripts = global.danmakufuScripts || {};
-    global.danmakufuScripts.__functions__ = global.danmakufuScripts.__functions__ || {};
-    this.functions = global.danmakufuScripts.__functions__;
-    this.blocks.forEach(function(block) {
-        if (block.kind === 'namespace') {
-            this.footer = 'danmakufuScripts["' + block.name + '"]=' + block.name + ';\n' + this.footer;
-        }
-    }, this);
+    this.header = 'if (typeof define !== \'function\') { var define = (require(\'amdefine\'))(module); }\n' +
+                  'define(\'danmakufu/' + filename + '\', function(require) {\n' +
+                  'var __functions__ = require(\'Functions\');\n' +
+                  'var Container = {};\n'
+    this.footer = 'return Container;\n});';
     this.variables = [];
     this.result = this.header + this.addJSBlock(0) + this.footer;
-    console.log(this.result);
 };
 
 Translator.prototype = {
@@ -44,7 +43,7 @@ Translator.prototype = {
             }
             block.jsString = this.translateBlock(block);
         } else {        
-            this.functions[block.name] = function() {
+            Functions[block.name] = function() {
                 block.func.apply(null, arguments);
             };
         }
@@ -76,7 +75,7 @@ Translator.prototype = {
         } else if (block.kind === 'sub') {
             return 'this.' + block.name + ' = function() {\n';
         } else if (block.kind === 'namespace') {
-            return 'function ' + block.name + '() {\n';
+            return 'Container.' + block.name + ' = function() {\n';
         } else {
             return '{\n';
         }
@@ -116,7 +115,7 @@ Translator.prototype = {
     call: function(block, code) {
         if (code.value) {
             if (code.value.func) {
-                this.functions[code.value.name] = function() {
+                Functions[code.value.name] = function() {
                     code.value.func.apply(null, arguments);
                 };
             }
@@ -125,7 +124,7 @@ Translator.prototype = {
             for (var i=0, length=code.args; i<length; ++i) {
                 args.push(this.variables.pop());
             }
-            return 'danmakufuScripts.__functions__["' + code.value.name + '"](' + args.join(',') + ')';
+            return '__functions__["' + code.value.name + '"](' + args.join(',') + ')';
         }
         return '';
     },
@@ -164,7 +163,7 @@ Translator.prototype = {
         var bracketBegin = '', bracketEnd = '';
         code.noSemicolon = true;
         var next, str = '';
-        if (type.indexOf('if') !== -1) {
+        if (type !== 'else') {
             bracketBegin = '(';
             bracketEnd = ')';
         }
@@ -180,6 +179,10 @@ Translator.prototype = {
         return type + ' ' + bracketBegin + str + bracketEnd + this.addJSBlock(block.children.shift());
     },
 
+    loopIf: function(block, code) {
+        return this.ifStatement(block, code, 'while');
+    },
+
     loopCount: function(block, code) {
         var count = this.variables.pop();
         return this.loopStatement(block, 0, count);
@@ -188,21 +191,23 @@ Translator.prototype = {
     loopAscent: function(block, code) {
         var end = this.variables.pop();
         var start = this.variables.pop();
-        return this.loopStatement(block, start, end);
+        return this.loopStatement(block, start, end, true);
     },
 
     loopDescent: function(block, code) {
         var start = this.variables.pop();
         var end = this.variables.pop();
-        return this.loopStatement(block, start - 1, end, '--', '>=');
+        return this.loopStatement(block, start - 1, end, true, '--', '>=');
     },
 
-    loopStatement: function(block, start, end, increment, compare) {
+    loopStatement: function(block, start, end, unshift, increment, compare) {
         increment = increment || '++';
         var id = '__i';
         var childBlock = block.children.shift();
-        compare = compare || '<'
-        childBlock.codes.unshift({ type: 'pushVariable', variable: id });
+        compare = compare || '<';
+        if (unshift) {
+            childBlock.codes.unshift({ type: 'pushVariable', variable: id });
+        }
         return 'for (var ' + id + ' = ' + start + '; ' + id + compare + end + '; ' + id + 
             increment + ')' + this.addJSBlock(childBlock);
     }

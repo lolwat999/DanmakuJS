@@ -39,9 +39,10 @@ var DanmakuJS = function() {
 
     this.testDanmakufu = function(file) {
         var danmakufu = Danmakufu.loadFile(file);
-        danmakufu.execute();
-        var main = new danmakufuScripts.script_enemy_main();
-        main.Initialize();
+        danmakufu.execute(function(script) {
+            var main = new script.script_enemy_main();
+            main.Initialize();
+        });
     };
 
     this.setDebug = function(debug) {

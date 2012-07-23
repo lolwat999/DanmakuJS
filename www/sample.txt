@@ -40,6 +40,11 @@ script_enemy_main {
         descent (i in 0..5) {
             print(i);            
         }
+
+        while (e > 0) {
+            e--;
+            print(e);
+        }
     }
 
     @MainLoop {
