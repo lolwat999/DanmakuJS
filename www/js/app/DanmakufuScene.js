@@ -19,7 +19,9 @@ var DanmakufuScene = GameScene.extend({
         this.foreground = new OverlayState(core);
         this.foreground.uiFrame = new Entity({ x: 0, y: 0, image: 'frame.png' });
         this.foreground.add(this.foreground.uiFrame);
-        this.danmakufu = Danmakufu.loadFile(file);
+        this.danmakufu = Danmakufu.loadFile(file, {
+            // function dictionary
+        });
         this.danmakufu.execute(function(script) {
             that.main = new script.script_enemy_main();
             that.script = script;

@@ -6,10 +6,10 @@ require('lib/jquery-1.8b1');
 var _ = require('lib/underscore-min');
 var Stats = require('lib/Stats');
 var THREE = require('lib/Three');
-var GameSceneTest = require('GameSceneTest');
-var GameStateManager = require('GameStateManager');
-var Input = require('Input');
-var DanmakufuScene = require('DanmakufuScene');
+var GameSceneTest = require('./GameSceneTest');
+var GameStateManager = require('./GameStateManager');
+var Input = require('./Input');
+var DanmakufuScene = require('./DanmakufuScene');
 
 var DanmakuJS = function() {
     var that = this;

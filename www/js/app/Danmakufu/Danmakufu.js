@@ -4,14 +4,16 @@ var Globals = require('./Globals');
 var ScriptEngine = require('./ScriptEngine');
 var Translator = require('./Translator');
 
-var Danmakufu = function(fileString, filename) {
+var Danmakufu = function(fileString, filename, functions) {
+    var newFunctions = {};
     var loc = window.location.pathname;
     var dir = loc.substring(loc.lastIndexOf('/'));
 
     this.filename = filename;
     this.globals = new Globals({ directory: dir });
-    this.engine = new ScriptEngine(fileString, this.globals.getFunctionSymbols());
-    this.translator = new Translator(this.engine.blocks, filename);
+    functions = extend([ this.globals.functions, functions ]);
+    this.engine = new ScriptEngine(fileString, this.globals.toSymbols(functions));
+    this.translator = new Translator(this.engine.blocks, filename, this.engine.parser.comments);
 };
 
 Danmakufu.prototype = {
@@ -26,7 +28,7 @@ Danmakufu.prototype = {
     }
 };
 
-Danmakufu.loadFile = function(path) {
+Danmakufu.loadFile = function(path, functions) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open('GET', path, false);
     xmlHttp.send(null);
@@ -35,9 +37,21 @@ Danmakufu.loadFile = function(path) {
         if (dotIndex === -1) {
             dotIndex = path.length;
         }
-        return new Danmakufu(xmlHttp.responseText, path.substr(0, dotIndex));
+        return new Danmakufu(xmlHttp.responseText, path.substr(0, dotIndex), functions);
     }
     return null;
+};
+
+var extend = function(objects) {
+    var newObj = {};
+    objects.forEach(function(object) {
+        for (var i in object) {
+            if (object.hasOwnProperty(i)) {
+                newObj[i] = object[i];
+            }
+        }
+    });
+    return newObj;
 };
 
 return Danmakufu;

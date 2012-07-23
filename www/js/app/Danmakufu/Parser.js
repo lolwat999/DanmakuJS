@@ -654,7 +654,7 @@ Parser.prototype = {
                 this.parseBlock(symbol.sub, args, symbol.sub.kind === 'function');
                 needSemicolon = false;
             } else if (scanner.next === 'comment') {
-                this.comments.push({ line: scanner.line, description: scanner.word });
+                this.comments.push(scanner.word);
                 scanner.advance();
                 needSemicolon = false;
             }

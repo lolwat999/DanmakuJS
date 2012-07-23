@@ -10,12 +10,13 @@ var Globals = function(options) {
 };
 
 Globals.prototype = {
-    getFunctionSymbols: function() {
-        return functionsToSymbols(this.functions);
+    toSymbols: function(functions) {
+        functions = functions || this.functions;
+        return toSymbols(functions);
     }
 };
 
-var functionsToSymbols = function(functions) {
+var toSymbols = function(functions) {
     var arr = [];
     for (var i in functions) {
         if (functions.hasOwnProperty(i)) {
