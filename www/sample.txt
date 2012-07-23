@@ -13,10 +13,12 @@ script_enemy_main {
 
     @Initialize {
         LoadGraphic("characters/marisa.png");
-        let test = RED01;
     }
 
     @MainLoop {
+        if (frame == 60) {
+            CreateShot01(GetX, GetY, 10, 0, RED01, 10);
+        }
         frame++;
     }
 

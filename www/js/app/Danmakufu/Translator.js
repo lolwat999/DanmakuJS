@@ -36,18 +36,20 @@ Translator.prototype = {
         if (!block.func) {
             block = clone(block);
             block.codes = clone(block.codes);
+            if (!block.children) {
             block.children = [];
-            for (var i=index, length=this.blocks.length; i<length; ++i) {
-                var childBlock = this.blocks[i];
-                if (childBlock.level === block.level + 1 && !childBlock.parent) {
-                    childBlock.parent = block;
-                    block.children.push(childBlock);
+                for (var i=index, length=this.blocks.length; i<length; ++i) {
+                    var childBlock = this.blocks[i];
+                    if (childBlock.level === block.level + 1 && !childBlock.parent) {
+                        childBlock.parent = block;
+                        block.children.push(childBlock);
+                    }
                 }
             }
             block.jsString = this.translateBlock(block);
         } else {        
             Functions[block.name] = function() {
-                block.func.apply(null, arguments);
+                return block.func.apply(null, arguments);
             };
         }
         return block.jsString;
@@ -155,17 +157,22 @@ Translator.prototype = {
             var functionCall = code.value.func ? '__functions__["' + code.value.name + '"]' : code.value.name;
             if (code.value.func) {
                 Functions[code.value.name] = function() {
-                    code.value.func.apply(null, arguments);
+                    return code.value.func.apply(null, arguments);
                 };
             }
             var args = [];
             var next;
             for (var i=0, length=code.args; i<length; ++i) {
-                args.push(this.variables.pop());
+                args.unshift(this.variables.pop());
             }
             return functionCall + '(' + args.join(',') + ')';
         }
         return '';
+    },
+
+    callAndPushResult: function(block, code) {
+        code.noSemicolon = true;
+        this.variables.push(this.call(block, code));
     },
 
     operation: function(block, code) {

@@ -31,6 +31,24 @@ var DanmakufuScene = GameScene.extend({
                 that.enemy.life = life;
             },
 
+            GetX: function() {
+                return that.enemy.x;
+            },
+
+            GetY: function() {
+                return that.enemy.y;
+            },
+
+            CreateShot01: function(x, y, speed, angle, image, timeout) {
+                setTimeout(function() {
+                    that.add(new Bullet({
+                        x: x, y: y, speed: speed, 
+                        angle: angle + 180, image: image,
+                        owner: that.enemy, life: 10000
+                    }));
+                }, timeout);
+            },
+
             // Constants
             RED01: 'bullets/circleredsm.png'
         });

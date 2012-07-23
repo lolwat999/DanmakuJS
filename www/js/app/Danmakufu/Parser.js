@@ -132,10 +132,7 @@ Parser.prototype = {
 
     registerFunction: function(func) {
         var blocks = this.blocks;
-        var symbol = {
-            level: 0,
-            variable: -1
-        };
+        var symbol = { level: 0, variable: -1 };
         if (func.constant) {
             symbol.name = '"' + func.constant + '"';
         } else if (func.func) {
@@ -673,9 +670,11 @@ Parser.prototype = {
 
     parseInlineBlock: function(block, blockKind) {
         var scanner = this.scanner;
-        var block = newBlock(this.blocks, block.level + 1, blockKind);
-        this.parseBlock(block, null, false);
-        block.codes.push({ line: scanner.line, type: 'call', block: block, length: 0 });
+        var childBlock = newBlock(this.blocks, block.level + 1, blockKind);
+        block.children = block.children || [];
+        block.children.unshift(childBlock);
+        childBlock.parent = block;
+        this.parseBlock(childBlock, null, false);
     },
 
     parseBlock: function(block, args, addingResult) {
