@@ -52,6 +52,15 @@ var Entity = Class.extend({
         }
     },
 
+    setImage: function(image, color) {
+        this.image = options.image;
+        var map = Entity.imageMapCache.load('img/' + this.image);
+        this.model = options.model || new THREE.Sprite({
+            color: color || this.color || 0xFFFFFF, map: map,
+            useScreenCoordinates: false
+        });
+    },
+
     add: function(entity) {
         if (this.state) {
             entity.parent = entity.parent || this;

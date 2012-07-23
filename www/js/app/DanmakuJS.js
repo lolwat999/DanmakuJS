@@ -9,7 +9,7 @@ var THREE = require('lib/Three');
 var GameSceneTest = require('GameSceneTest');
 var GameStateManager = require('GameStateManager');
 var Input = require('Input');
-var Danmakufu = require('Danmakufu/Danmakufu');
+var DanmakufuScene = require('DanmakufuScene');
 
 var DanmakuJS = function() {
     var that = this;
@@ -29,20 +29,10 @@ var DanmakuJS = function() {
         that.renderer.setSize(width, height);
         that.container.append(that.renderer.domElement);
         Input.bind(that.container[0]);
-        that.gameStateManager.add(new GameSceneTest(that));
+        that.gameStateManager.add(new DanmakufuScene(that, 'sample.txt'));
         window.addEventListener('resize', this.onResized, false);
         that.setDebug(options.debug);
         that.mainLoop();
-
-        that.testDanmakufu('sample.txt');
-    };
-
-    this.testDanmakufu = function(file) {
-        var danmakufu = Danmakufu.loadFile(file);
-        danmakufu.execute(function(script) {
-            var main = new script.script_enemy_main();
-            main.Initialize();
-        });
     };
 
     this.setDebug = function(debug) {

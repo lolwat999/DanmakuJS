@@ -5,6 +5,7 @@ define('Functions', function() {
 define(function(require) {
 
 var Functions = require('Functions');
+var JSBeautify = require('./beautify');
     
 var Translator = function(blocks, filename) {
     this.blocks = blocks;
@@ -13,7 +14,10 @@ var Translator = function(blocks, filename) {
                   'var Container = {};\n'
     this.footer = 'return Container;\n});';
     this.variables = [];
-    this.result = this.header + this.addJSBlock(0) + this.footer;
+    this.result = JSBeautify(this.header + this.addJSBlock(0) + this.footer, {
+        indent_size: 2,
+        keep_array_indentation: true
+    });
 };
 
 Translator.prototype = {
