@@ -528,6 +528,7 @@ Parser.prototype = {
                     throw parserError(scanner, '\"..\" is required in ASCENT/DESCENT');
                 }
                 scanner.advance();
+                this.parseExpression(block);
                 if (scanner.next !== 'closeParen') {
                     throw parserError(scanner, '"\")\" is required"');
                 }
@@ -535,28 +536,12 @@ Parser.prototype = {
                 if (scanner.next === 'LOOP') {
                     scanner.advance();
                 }
-                if (!back) {
-                    block.codes.push({ line: scanner.line, type: 'swap' });
-                }
                 var length = block.codes.length;
-                block.codes.push({ line: scanner.line, type: 'dup2' });
-                this.writeOperation(block, 'compare', 2);
                 block.codes.push({ line: scanner.line, type: back ? 'loopDescent' : 'loopAscent' });
-                if (back) {
-                    this.writeOperation(block, 'predecessor', 1);
-                }
                 var nextBlock = newBlock(blocks, block.level + 1, 'loop');
                 var counter = [];
                 counter.push(word);
                 this.parseBlock(nextBlock, counter, false);
-                block.codes.push({ line: scanner.line, type: 'dup' });
-                block.codes.push({ line: scanner.line, type: 'call', value: newBlock, length: 1 });
-                if (!back) {
-                    this.writeOperation(block, 'successor', 1);
-                }
-                block.codes.push({ line: scanner.line, type: 'loopBack', length: length });
-                block.codes.push({ line: scanner.line, type: 'pop' });
-                block.codes.push({ line: scanner.line, type: 'pop' });
                 needSemicolon = false;
             } else if (scanner.next === 'IF') {
                 scanner.advance();

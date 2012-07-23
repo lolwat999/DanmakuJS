@@ -32,6 +32,14 @@ script_enemy_main {
         }
 
         let e = 5;
+
+        loop (3) {
+            print(e + 5);
+        }
+
+        descent (i in 0..5) {
+            print(i);            
+        }
     }
 
     @MainLoop {

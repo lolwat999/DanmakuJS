@@ -15,7 +15,7 @@ var Scanner = function(options) {
     this.tokens = options.tokens || [];
     if (!this.tokens.length) {
         this.lines.forEach(function(line, index) {
-            this.tokens[index] = line.split(/(".*?"|[$-\-:-?{-~!"^`\[\]#\\@]|\s+)/g).filter(function(word) {
+            this.tokens[index] = line.split(/(".*?"|[$-\-:-?{-~!"^`\[\]#\\@]|[.]{2}|\s+)/g).filter(function(word) {
                 return word.match(/\S+/);
             });
         }, this);
@@ -96,7 +96,8 @@ var ComparisonTypes = {
     '>': true,
     // Not comparisons, but we need these to be double matched.
     '+': true,
-    '-': true
+    '-': true,
+    '.': true
 }
 
 var OperatorTypes = {

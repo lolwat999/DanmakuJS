@@ -12,7 +12,7 @@ var Translator = function(blocks) {
     this.functions = global.danmakufuScripts.__functions__;
     this.blocks.forEach(function(block) {
         if (block.kind === 'namespace') {
-            this.footer = 'this.danmakufuScripts["' + block.name + '"]=' + block.name + ';\n' + this.footer;
+            this.footer = 'danmakufuScripts["' + block.name + '"]=' + block.name + ';\n' + this.footer;
         }
     }, this);
     this.variables = [];
@@ -75,10 +75,10 @@ Translator.prototype = {
             return '';
         } else if (block.kind === 'sub') {
             return 'this.' + block.name + ' = function() {\n';
-        } else if (block.kind === 'normal') {
-            return '{\n';
-        } else {
+        } else if (block.kind === 'namespace') {
             return 'function ' + block.name + '() {\n';
+        } else {
+            return '{\n';
         }
     },
 
@@ -175,9 +175,36 @@ Translator.prototype = {
                 str += this.translateCode(block, next);
             }
         } while (next && next.type.indexOf('case') === -1);
-        str += this.variables.join('');
+        str += this.variables.join(' ');
         this.variables = [];
         return type + ' ' + bracketBegin + str + bracketEnd + this.addJSBlock(block.children.shift());
+    },
+
+    loopCount: function(block, code) {
+        var count = this.variables.pop();
+        return this.loopStatement(block, 0, count);
+    },
+
+    loopAscent: function(block, code) {
+        var end = this.variables.pop();
+        var start = this.variables.pop();
+        return this.loopStatement(block, start, end);
+    },
+
+    loopDescent: function(block, code) {
+        var start = this.variables.pop();
+        var end = this.variables.pop();
+        return this.loopStatement(block, start - 1, end, '--', '>=');
+    },
+
+    loopStatement: function(block, start, end, increment, compare) {
+        increment = increment || '++';
+        var id = '__i';
+        var childBlock = block.children.shift();
+        compare = compare || '<'
+        childBlock.codes.unshift({ type: 'pushVariable', variable: id });
+        return 'for (var ' + id + ' = ' + start + '; ' + id + compare + end + '; ' + id + 
+            increment + ')' + this.addJSBlock(childBlock);
     }
 };
 
