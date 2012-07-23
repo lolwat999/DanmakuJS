@@ -545,7 +545,6 @@ Parser.prototype = {
                 needSemicolon = false;
             } else if (scanner.next === 'IF') {
                 scanner.advance();
-                block.codes.push({ line: scanner.line, type: 'caseBegin' });
                 this.parseParentheses(block);
                 block.codes.push({ line: scanner.line, type: 'caseIfNot' });
                 this.parseInlineBlock(block, 'normal');
@@ -557,7 +556,7 @@ Parser.prototype = {
                         block.codes.push({ line: scanner.line, type: 'caseElseIf' });
                         this.parseInlineBlock(block, 'normal');
                     } else {
-                        block.codes.push({ line: scanner.line, type: 'caseNext' });
+                        block.codes.push({ line: scanner.line, type: 'caseElse' });
                         this.parseInlineBlock(block, 'normal');
                         break;
                     }
@@ -567,40 +566,30 @@ Parser.prototype = {
             } else if (scanner.next === 'ALTERNATIVE') {
                 scanner.advance();
                 this.parseParentheses(block);
-                block.codes.push({ line: scanner.line, type: 'caseBegin' });
+                block.codes.push({ line: scanner.line, type: 'alternative' });
                 while (scanner.next === 'CASE') {
                     scanner.advance();
                     if (scanner.next !== 'openParen') {
                         throw parserError(scanner, '\"(\" is needed');
                     }
-                    block.codes.push({ line: scanner.line, type: 'caseBegin' });
                     do {
                         scanner.advance();
-                        block.codes.push({ line: scanner.line, type: 'dup' });
-                        this.writeOperation(block, 'compare', 2);
-                        block.codes.push({ line: scanner.line, type: 'compareE' });
-                        block.codes.push({ line: scanner.line, type: 'dup' });
-                        block.codes.push({ line: scanner.line, type: 'caseIf' });
-                        block.codes.push({ line: scanner.line, type: 'pop' });
+                        this.parseExpression(block);
                     } while (scanner.next === 'comma');
                     if (scanner.next !== 'closeParen') {
                         throw parserError(scanner, '\")\" is needed');
                     }
                     scanner.advance();
-                    block.codes.push({ line: scanner.line, type: 'caseIfNot' });
-                    block.codes.push({ line: scanner.line, type: 'pop' });
-                    this.parseInlineBlock(block, 'normal');
-                    block.codes.push({ line: scanner.line, type: 'caseNext' });
-                    if (scanner.next === 'OTHERS') {
-                        scanner.advance();
-                        block.codes.push({ line: scanner.line, type: 'pop' });
-                        this.parseInlineBlock(block, 'normal');
-                    } else {
-                        block.codes.push({ line: scanner.line, type: 'pop' });
-                    }
-                    block.codes.push({ line: scanner.line, type: 'caseEnd' });
-                    needSemicolon = false;
+                    block.codes.push({ line: scanner.line, type: 'caseStatement' });
+                    this.parseInlineBlock(block, 'caseBlock');
                 }
+                if (scanner.next === 'OTHERS') {
+                    block.codes.push({ line: scanner.line, type: 'caseOthers' });
+                    scanner.advance();
+                    this.parseInlineBlock(block, 'caseBlock');
+                }
+                block.codes.push({ line: scanner.line, type: 'alternativeEnd' });
+                needSemicolon = false;
             } else if (scanner.next === 'BREAK') {
                 scanner.advance();
                 block.codes.push({ line: scanner.line, type: 'breakLoop' });

@@ -47,6 +47,17 @@ script_enemy_main {
         }
 
         printStuff(55);
+
+        alternative (e)
+        case (0) {
+            print("0!");
+        }
+        case (5) {
+            print("5!");
+        }
+        others {
+            print(e);
+        }
     }
 
     @MainLoop {

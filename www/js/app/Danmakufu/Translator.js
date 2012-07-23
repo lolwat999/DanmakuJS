@@ -84,6 +84,8 @@ Translator.prototype = {
                 start = 'var ';
             }
             return start + block.name + ' = function(' + args + ') {\n';
+        } else if (block.kind === 'caseBlock') {
+            return '\n';
         } else {
             return '{\n';
         }
@@ -108,6 +110,8 @@ Translator.prototype = {
             return '';
         } else if (block.kind === 'normal') {
             return '}\n';
+        } else if (block.kind === 'caseBlock') {
+            return ' break;\n'
         } else {
             return '};\n';
         }
@@ -174,7 +178,7 @@ Translator.prototype = {
         return this.ifStatement(block, code, 'if')
     },
 
-    caseNext: function(block, code) {
+    caseElse: function(block, code) {
         return this.ifStatement(block, code, 'else');
     },
 
@@ -189,6 +193,10 @@ Translator.prototype = {
         if (type !== 'else') {
             bracketBegin = '(';
             bracketEnd = ')';
+        }
+        if (type === 'case' || type === 'default') {
+            bracketBegin = '';
+            bracketEnd = ':';
         }
         do {
             next = block[0];
@@ -233,6 +241,26 @@ Translator.prototype = {
         }
         return 'for (var ' + id + ' = ' + start + '; ' + id + compare + end + '; ' + id + 
             increment + ')' + this.addJSBlock(childBlock);
+    },
+
+    alternative: function(block, code) {
+        code.noSemicolon = true;
+        return 'switch (' + this.variables.pop() + ') {\n';
+    },
+
+    alternativeEnd: function(block, code) {
+        code.noSemicolon = true;
+        return '}\n';
+    },
+
+    caseStatement: function(block, code) {
+        code.noSemicolon = true;
+        return this.ifStatement(block, code, 'case');
+    },
+
+    caseOthers: function(block, code) {
+        code.noSemicolon = true;
+        return this.ifStatement(block, code, 'default');
     }
 };
 

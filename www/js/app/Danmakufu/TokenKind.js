@@ -20,6 +20,7 @@ var TokenKind = {
     'TIMES': 'times',
     'WHILE': 'while',
     'YIELD': 'yield',
+    'OTHERS': 'others',
 
     'equal': '==',
     'greaterEqual': '>=',
