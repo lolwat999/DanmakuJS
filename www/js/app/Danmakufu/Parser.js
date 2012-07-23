@@ -459,8 +459,8 @@ Parser.prototype = {
                 if (scanner.next === 'assign') {
                     scanner.advance();
                     this.parseExpression(block);
+                    block.codes.push({ line: scanner.line, type: 'let' });
                     block.codes.push({ line: scanner.line, type: 'assign', level: symbol.level, variable: symbol.name });
-
                 }
             } else if (scanner.next === 'LOCAL') {
                 scanner.advance();

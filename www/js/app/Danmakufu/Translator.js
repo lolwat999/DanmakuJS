@@ -18,6 +18,7 @@ var Translator = function(blocks, filename) {
         indent_size: 2,
         keep_array_indentation: true
     });
+    console.log(this.result);
 };
 
 Translator.prototype = {
@@ -116,6 +117,8 @@ Translator.prototype = {
             return '}\n';
         } else if (block.kind === 'caseBlock') {
             return ' break;\n'
+        } else if (block.kind === 'loop') {
+            return '}\n';
         } else {
             return '};\n';
         }
@@ -125,11 +128,15 @@ Translator.prototype = {
         return code && this[code.type] ? this[code.type](block, code) : '';
     },
 
+    let: function(block, code) {
+        code.noSemicolon = true;
+        return 'var ';
+    },
+
     assign: function(block, code) {
         block.variablesAssigned = block.variablesAssigned || {};
-        var assignIt = block.variablesAssigned[code.variable] ? '' : 'var ';
         block.variablesAssigned[code.variable] = true;
-        return assignIt + code.variable + '=' + this.variables.pop();
+        return code.variable + '=' + this.variables.pop();
     },
 
     pushValue: function(block, code) {
