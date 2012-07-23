@@ -19,7 +19,9 @@ script_enemy_main {
         print("Hello, world!");
         let c = a + b + 32 + 40;
         c += 20;
+        c++;
         let wat2 = testing ~ " " ~ wat;
+        
         if (a <= 18 || b >= 20 && d == true) {
             print(c);
             print(wat2);
@@ -28,6 +30,8 @@ script_enemy_main {
         } else {
             print("huh??");
         }
+
+        let e = 5;
     }
 
     @MainLoop {

@@ -15,6 +15,7 @@ var Translator = function(blocks) {
             this.footer = 'this.danmakufuScripts["' + block.name + '"]=' + block.name + ';\n' + this.footer;
         }
     }, this);
+    this.variables = [];
     this.result = this.header + this.addJSBlock(0) + this.footer;
     console.log(this.result);
 };
@@ -54,12 +55,12 @@ Translator.prototype = {
         var jsString = '';
         var after = false;
         while (block.codes.length) {
-            var code = block.codes.pop();
+            var code = block.codes.shift();
             if (code) {
                 var str = this.translateCode(block, code);
                 if (str) {
                     var semicolon = code.noSemicolon ? ' ' : ';\n';
-                    jsString = str + semicolon + jsString;
+                    jsString += str + semicolon;
                 }
             }
         }
@@ -96,13 +97,20 @@ Translator.prototype = {
     },
 
     assign: function(block, code) {
-        var key = code.variable;
-        var next = block.codes.pop();
-        return 'var ' + key + '=' + this.translateCode(block, next);
+        block.variablesAssigned = block.variablesAssigned || {};
+        var assignIt = block.variablesAssigned[code.variable] ? '' : 'var ';
+        block.variablesAssigned[code.variable] = true;
+        return assignIt + code.variable + '=' + this.variables.pop();
     },
 
     pushValue: function(block, code) {
-        return code.value;
+        this.variables.push(code.value);
+        return '';
+    },
+
+    pushVariable: function(block, code) {
+        this.variables.push(code.variable);
+        return '';
     },
 
     call: function(block, code) {
@@ -113,33 +121,31 @@ Translator.prototype = {
                 };
             }
             var args = [];
-            var newCode = block.codes.pop();
+            var next;
             for (var i=0, length=code.args; i<length; ++i) {
-                args.push(newCode.value !== undefined ? newCode.value : newCode.variable);
-                newCode = block.codes.pop();
+                args.push(this.variables.pop());
             }
-            block.codes.push(newCode);
             return 'danmakufuScripts.__functions__["' + code.value.name + '"](' + args.join(',') + ')';
         }
         return '';
     },
 
     operation: function(block, code) {
-        var values = [];
-        for (var i=0, length=code.clauses; i<length; ++i) {
-            var newCode = block.codes.pop();
-            if (newCode.type === 'operation') {
-                values.push(this.operation(block, newCode));
-            } else {
-                var value = newCode.value !== undefined ? newCode.value : newCode.variable;
-                if (value !== undefined) {
-                    values.push(value);
-                } else {
-                    block.codes.push(newCode);
-                }
+        var values = [], i, length;
+        for (i=0, length=code.clauses; i<length; ++i) {
+            if (this.variables.length) {
+                values.unshift(this.variables.pop());
             }
         }
-        return operations[code.name].apply(operations[code.name], values);
+        if (code.name === 'and' || code.name === 'or') {
+            for (i=0, length=values.length; i<length; ++i) {
+                this.variables.push(values[i]);
+            }
+            this.variables.push(operations[code.name]());
+        } else {
+            this.variables.push(operations[code.name].apply(operations[code.name], values));
+            return '';
+        }
     },
 
     caseIfNot: function(block, code) {
@@ -163,14 +169,15 @@ Translator.prototype = {
             bracketEnd = ')';
         }
         do {
-            next = block.codes.pop();
+            next = block[0];
             if (next && next.type.indexOf('case') === -1) {
+                block.codes.shift();
                 str += this.translateCode(block, next);
-            } else {
-                block.codes.push(next);
             }
         } while (next && next.type.indexOf('case') === -1);
-        return type + ' ' + bracketBegin + str + bracketEnd + this.addJSBlock(block.children.pop());
+        str += this.variables.join('');
+        this.variables = [];
+        return type + ' ' + bracketBegin + str + bracketEnd + this.addJSBlock(block.children.shift());
     }
 };
 
@@ -193,15 +200,21 @@ var operationsToStr = {
     greaterEqual: '>=',
     lessEqual: '<=',
     and: '&&',
-    or: '||'
+    or: '||',
+    successor: '++',
+    predecessor: '--'
 };
 
 for (var i in operationsToStr) {
     (function(i) {
-        operations[i] = function(right, left) {
+        operations[i] = function(left, right) {
             var str = operationsToStr[i];
             if (left !== undefined) {
-                str = left + str;
+                if (i === 'successor' || i === 'predecessor') {
+                    str += left;
+                } else {
+                    str = left + str;
+                }
             }
             if (right !== undefined) {
                 str += right;

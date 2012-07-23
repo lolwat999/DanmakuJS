@@ -93,7 +93,10 @@ var ComparisonTypes = {
     '!': true,
     '=': true,
     '<': true,
-    '>': true
+    '>': true,
+    // Not comparisons, but we need these to be double matched.
+    '+': true,
+    '-': true
 }
 
 var OperatorTypes = {
