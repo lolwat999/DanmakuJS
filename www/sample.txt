@@ -14,6 +14,7 @@ script_enemy_main {
     let a = 19.5;
     let b = 22.5;
     let d = true;
+    let arr = [ 10, 20, 30, 40, 50, 60 ];
 
     @Initialize {
         print("Hello, world!");
@@ -38,7 +39,7 @@ script_enemy_main {
         }
 
         descent (i in 0..5) {
-            print(i);            
+            print(arr[i + 1]);            
         }
 
         while (e > 0) {
@@ -47,6 +48,7 @@ script_enemy_main {
         }
 
         printStuff(55);
+        theMeaningOfLife;
 
         alternative (e)
         case (0) {
@@ -79,4 +81,8 @@ script_enemy_main {
 
 function printStuff(d) {
     print(d);
+}
+
+function theMeaningOfLife {
+    print(42);
 }

@@ -241,19 +241,17 @@ Parser.prototype = {
             }
         } else if (scanner.next === 'openBracket') {
             scanner.advance();
-            block.codes.push({
-                line: scanner.line,
-                value: scanner.word,
-                type: 'pushValue'
-            });
             while (scanner.next !== 'closeBracket') {
                 this.parseExpression(block);
-                this.writeOperation(block, 'append', 2);
                 if (scanner.next !== 'comma') {
                     break;
                 }
                 scanner.advance();
             }
+            block.codes.push({
+                line: scanner.line,
+                type: 'endIndex'
+            });
             if (scanner.next !== 'closeBracket') {
                 throw parserError(scanner, 'Mismatched brackets.');
             }
@@ -305,6 +303,7 @@ Parser.prototype = {
                     this.parseExpression(block);
                     this.writeOperation(block, 'slice', 3);
                 } else {
+                    this.parseExpression(block);
                     this.writeOperation(block, 'index', 2);
                 }
                 if (scanner.next !== 'closeBracket') {
@@ -407,7 +406,7 @@ Parser.prototype = {
                     block.codes.push({ line: scanner.line, type: 'assign', 
                         level: symbol.level, variable: symbol.name });
                 } else if (scanner.next === 'openBracket') {
-                    block.codes.push({ line: scanner.line, type: 'pushVariableWritable', 
+                    block.codes.push({ line: scanner.line, type: 'pushVariable', 
                         level: symbol.level, variable: symbol.name });
                     scanner.advance();
                     this.parseExpression(block);

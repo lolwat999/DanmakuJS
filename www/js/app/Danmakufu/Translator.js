@@ -261,11 +261,19 @@ Translator.prototype = {
     caseOthers: function(block, code) {
         code.noSemicolon = true;
         return this.ifStatement(block, code, 'default');
+    },
+
+    endIndex: function(block, code) {
+        var str = this.variables.join(',');
+        this.variables = [ '[ ' + str + ' ]' ];
+        return '';
     }
 };
 
 var operations = {
-
+    index: function(left, right) {
+        return left + '[' + right + ']';
+    }
 };
 
 var operationsToStr = {
@@ -285,7 +293,8 @@ var operationsToStr = {
     and: '&&',
     or: '||',
     successor: '++',
-    predecessor: '--'
+    predecessor: '--',
+    append: ','
 };
 
 var FunctionTypes = {
