@@ -21,7 +21,9 @@ script_enemy_main {
         if (frame % 5 == 0) {
             let high = 10;
             ascent (i in 0..10) {
-                CreateShot01(GetX, GetY, 10, (angleMax / high) * i + (frame % 360), BLUE01, 10);
+                let ang = (angleMax / high) * i + frame;
+                Bullet(GetX, GetY, 10, ang % 360);
+                #CreateShot01(GetX, GetY, 10, ang % 360, BLUE01, 10);
             }
         }
         frame++;
@@ -39,8 +41,13 @@ script_enemy_main {
 
     }
 
-    task Bullet(x, y, v, angle) {
-        print(x);
+    function Bullet(x, y, v, angle) {
+        let obj = Obj_Create(OBJ_SHOT);
+        Obj_SetPosition(obj, x, y);
+        Obj_SetAngle(obj, angle);
+        Obj_SetSpeed(obj, v);
+        ObjShot_SetGraphic(obj, BLUE01);
+        ObjShot_SetDelay(obj, 0);
     }
 }
 

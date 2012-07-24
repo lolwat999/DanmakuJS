@@ -10,7 +10,7 @@ var TokenKind = {
     'IF': 'if',
     'FUNCTION': 'function',
     'IN': 'in',
-    'LET': /let|var/,
+    'LET': /^(let|var)$/,
     'LOCAL': 'local',
     'LOOP': 'loop',
     'REAL': 'real',
@@ -65,7 +65,7 @@ var TokenKind = {
     'comment': '#',
     'real': /^(\+|-)?\d+(\.\d+)?$/,
     'string': /".*?"/,
-    'bool': /true|false/,
+    'bool': /^(true|false)$/,
     'word': /\w+\b/,
 
     'invalid': null

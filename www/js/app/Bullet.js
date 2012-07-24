@@ -16,13 +16,22 @@ var Bullet = Entity.extend({
     },
 
     set: function(options) {
+        options = options || {};
         this._super(options);
-        this.life = options.life || 100;
-        this.model.blending = options.blending || THREE.AdditiveBlending;
+        this.life = options.life || 10000;
+        this.blending = options.blending || THREE.AdditiveBlending;
+        if (this.model) {
+            this.model.blending = this.blending;
+        }
         this.speedType = options.speedType || Entity.speedTypes.POLAR;
         this.angleToRotation = options.angleToRotation || true;
         this.owner = options.owner || null;
         this.angleOffset = options.angleOffset || 270;
+        this.delay = options.delay || 0;
+        if (this.model && this.delay > 0) {
+            this.model.opacity = 0;
+            this.canCollide = false;
+        }
     },
 
     expired: function() {
@@ -43,7 +52,14 @@ var Bullet = Entity.extend({
         if (this.outOfBounds(500)) {
             this.alive = false;
         }
-        if (this.alive) {
+        if (this.delay > 0) {
+            --this.delay;
+            this.canCollide = false;
+            if (!this.delay && this.model) {
+                this.model.opacity = 1;
+                this.canCollide = true;
+            }
+        } else if (this.alive) {
             this.time += delta / 0.016666;
             if (this.time > this.life) {
                 this.dying();

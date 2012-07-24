@@ -99,6 +99,14 @@ var DanmakufuScene = GameScene.extend({
                 return that.enemy.y;
             },
 
+            SetX: function(x) {
+                that.enemy.x = x;
+            },
+
+            SetY: function(y) {
+                that.enemy.y = y;
+            },
+
             GetPlayerX: function() {
                 return that.player.x;
             },
@@ -139,17 +147,54 @@ var DanmakufuScene = GameScene.extend({
                 return DanmakuJS.stats.FPS;
             },
 
-            CreateShot01: function(x, y, speed, angle, image, timeout) {
+            CreateShot01: function(x, y, speed, angle, image, delay) {
                 if (!that.enemy.alive) {
                     return;
                 }
-                setTimeout(function() {
-                    that.add(new Bullet({
-                        x: x, y: y, speed: speed, 
-                        angle: angle + 180, image: image,
-                        owner: that.enemy, life: 10000
-                    }));
-                }, timeout);
+                that.add(new Bullet({
+                    x: x, y: y, speed: speed, 
+                    angle: angle + 180, image: image,
+                    owner: that.enemy, life: 10000,
+                    delay: delay
+                }));
+            },
+
+            Obj_Create: function(type) {
+                var entity = new EntityType[type]();
+                entity.owner = that.enemy;
+                if (that.enemy.alive) {
+                    that.add(entity);
+                }
+                return entity;
+            },
+
+            Obj_SetPosition: function(obj, x, y) {
+                obj.x = x;
+                obj.y = y;
+            },
+
+            Obj_SetAngle: function(obj, angle) {
+                obj.angle = angle;
+            },
+
+            Obj_SetSpeed: function(obj, v) {
+                obj.speed = v;
+            },
+
+            ObjShot_SetGraphic: function(obj, image) {
+                obj.setImage(image);
+            },
+
+            ObjShot_SetDelay: function(obj, delay) {
+                obj.delay = 0;
+                if (delay > 0 && obj.model) {
+                    obj.model.opacity = 0;
+                    obj.canCollide = false;
+                }
+            },
+
+            Obj_BeDeleted: function(obj) {
+                return obj.alive;
             }
         };
     }
@@ -166,6 +211,12 @@ var shotType = function(delta, owner, state, pattern) {
         }), state);
     }
     pattern.cooldown = 15;
+};
+
+var EntityType = {
+    Bullet: Bullet,
+    Entity: Entity,
+    Enemy: Enemy
 };
 
 return DanmakufuScene;

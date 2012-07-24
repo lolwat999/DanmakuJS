@@ -1,7 +1,6 @@
 define(function(require) {
 
 var THREE = require('lib/Three');
-var EventEmitter = require('lib/eventemitter2');
 var Tasks = require('./Tasks');
 
 var Entity = Class.extend({
@@ -10,9 +9,17 @@ var Entity = Class.extend({
     type: 'entity',
 
     init: function(options) {
-        _.extend(this, new EventEmitter());
-        if (options) {
-            this.set(options);
+        this.set(options);
+        this.events = {};
+    },
+
+    on: function(type, callback) {
+        this.events[type] = callback;
+    },
+
+    emit: function(type) {        
+        if (this.events[type]) {
+            this.events[type].apply(this, _.rest(arguments));
         }
     },
 
@@ -56,6 +63,9 @@ var Entity = Class.extend({
             color: color || this.color || 0xFFFFFF, map: map,
             useScreenCoordinates: false
         });
+        if (this.blending !== undefined) {
+            this.model.blending = this.blending;
+        }
         var parentX = this.parent ? this.parent.x : 0;
         var parentY = this.parent ? this.parent.y : 0;
         this.model.position.x = this.x + parentX;

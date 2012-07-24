@@ -87,11 +87,9 @@ Translator.prototype = {
             return start + 'function(' + args + ') {\n';
         } else if (FunctionTypes[block.kind]) {
             if (block.parent.kind === 'namespace') {
-                start = 'this.';
-            } else {
-                start = 'var ';
+                start = 'this.' + block.name + '=';
             }
-            return start + block.name + ' = function(' + args + ') {\n';
+            return 'var ' + block.name + '=' + start + ' function(' + args + ') {\n';
         } else if (block.kind === 'caseBlock') {
             return '\n';
         } else {

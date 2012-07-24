@@ -73,9 +73,6 @@ Scanner.prototype = {
                     break;
                 }
             }
-            if (next === null) {
-                console.log(token);
-            }
             this.next = next;
         } else {
             this.next = '';

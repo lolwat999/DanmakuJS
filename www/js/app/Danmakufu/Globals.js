@@ -59,7 +59,8 @@ var Globals = function(options) {
 
         // Constants
         RED01: 'bullets/circleredsm.png',
-        BLUE01: 'bullets/circlebluesm.png'
+        BLUE01: 'bullets/circlebluesm.png',
+        OBJ_SHOT: 'Bullet'
     };
 
     this.functions = functions;
