@@ -60,6 +60,13 @@ var DanmakufuScene = GameScene.extend({
         this.add(player);
         return player;
     },
+
+    remove: function(entity) {
+        this._super(entity);
+        if (entity.id) {
+            delete this.objectsByID[entity.id];
+        }
+    },
     
     update: function(delta) {
         if (this.initialized) {
@@ -195,10 +202,12 @@ var DanmakufuScene = GameScene.extend({
 
             ObjShot_SetDelay: function(obj, delay) {
                 obj = that.objectsByID[obj];
-                obj.delay = 0;
-                if (delay > 0 && obj.model) {
-                    obj.model.opacity = 0;
-                    obj.canCollide = false;
+                if (obj) {
+                    obj.delay = 0;
+                    if (delay > 0 && obj.model) {
+                        obj.model.opacity = 0;
+                        obj.canCollide = false;
+                    }
                 }
             },
 
