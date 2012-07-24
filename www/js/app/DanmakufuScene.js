@@ -15,6 +15,8 @@ var DanmakufuScene = GameScene.extend({
     init: function(core, file) {
         this._super(core);
         var that = this;
+        this.objectsByID = {};
+        this.idCount = 0;
         this.enemy = this.addEnemy();
         this.player = this.addPlayer();
         this.foreground = new OverlayState(core);
@@ -165,27 +167,34 @@ var DanmakufuScene = GameScene.extend({
                 if (that.enemy.alive) {
                     that.add(entity);
                 }
-                return entity;
+                var id = entity.id = ++that.idCount;
+                that.objectsByID[id] = entity;
+                return id;
             },
 
             Obj_SetPosition: function(obj, x, y) {
+                obj = that.objectsByID[obj];
                 obj.x = x;
                 obj.y = y;
             },
 
             Obj_SetAngle: function(obj, angle) {
+                obj = that.objectsByID[obj];
                 obj.angle = angle;
             },
 
             Obj_SetSpeed: function(obj, v) {
+                obj = that.objectsByID[obj];
                 obj.speed = v;
             },
 
             ObjShot_SetGraphic: function(obj, image) {
+                obj = that.objectsByID[obj];
                 obj.setImage(image);
             },
 
             ObjShot_SetDelay: function(obj, delay) {
+                obj = that.objectsByID[obj];
                 obj.delay = 0;
                 if (delay > 0 && obj.model) {
                     obj.model.opacity = 0;
@@ -194,6 +203,7 @@ var DanmakufuScene = GameScene.extend({
             },
 
             Obj_BeDeleted: function(obj) {
+                obj = that.objectsByID[obj];
                 return obj.alive;
             }
         };

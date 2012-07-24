@@ -382,6 +382,11 @@
         }
         return str;
     };
+
+    window.URL = window.URL || window.webkitURL;
+    window.StringWorker = function(str) {
+        return new Worker(URL.createObjectURL(new Blob([ str ])));
+    };
     
 })((typeof(exports) != 'undefined') ? global : window); // Account for CommonJS environments
 

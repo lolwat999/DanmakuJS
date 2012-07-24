@@ -41,7 +41,7 @@ script_enemy_main {
 
     }
 
-    function Bullet(x, y, v, angle) {
+    task Bullet(x, y, v, angle) {
         let obj = Obj_Create(OBJ_SHOT);
         Obj_SetPosition(obj, x, y);
         Obj_SetAngle(obj, angle);
