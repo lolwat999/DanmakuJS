@@ -8,6 +8,8 @@ var Bullet = Entity.extend({
 
     canCollide: true,
 
+    isBullet: true,
+
     init: function(options) {
         this.time = 0;
         this._super(options);

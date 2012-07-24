@@ -11,7 +11,9 @@ var Entity = Class.extend({
 
     init: function(options) {
         _.extend(this, new EventEmitter());
-        this.set(options);
+        if (options) {
+            this.set(options);
+        }
     },
 
     set: function(options) {

@@ -15,6 +15,7 @@ var GameState = Class.extend({
     update: function(delta) {
         ++this.frame;
         var entity, entities = this.entities;
+        var entitiesToRemove = [];
         this.entitiesByGrid = [];
         for (var i=0, iMax = entities.length; i<iMax; ++i) {
             entity = entities[i];

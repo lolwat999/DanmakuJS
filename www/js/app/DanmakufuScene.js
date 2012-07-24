@@ -20,47 +20,14 @@ var DanmakufuScene = GameScene.extend({
         this.foreground = new OverlayState(core);
         this.foreground.uiFrame = new Entity({ x: 0, y: 0, image: 'frame.png' });
         this.foreground.add(this.foreground.uiFrame);
-        
-        var functions = {
-            // Global functions
-            LoadGraphic: function(file) {
-                that.enemy.setImage(file);
-            },
-
-            SetLife: function(life) {
-                that.enemy.life = life;
-            },
-
-            GetX: function() {
-                return that.enemy.x;
-            },
-
-            GetY: function() {
-                return that.enemy.y;
-            },
-
-            CreateShot01: function(x, y, speed, angle, image, timeout) {
-                if (!that.enemy.alive) {
-                    return;
-                }
-                setTimeout(function() {
-                    that.add(new Bullet({
-                        x: x, y: y, speed: speed, 
-                        angle: angle + 180, image: image,
-                        owner: that.enemy, life: 10000
-                    }));
-                }, timeout);
-            }
-        };
-
-        this.danmakufu = Danmakufu.loadFile(file, functions);
-
+        this.danmakufu = Danmakufu.loadFile(file, this.getScriptFunctions());
         this.danmakufu.execute(function(script) {
             that.main = new script.script_enemy_main();
             that.script = script;
             that.main.Initialize();
             that.initialized = true;
             that.comments = that.script.__comments__;
+            that.script.__startTime__ = new Date();
         });
     },
 
@@ -110,6 +77,81 @@ var DanmakufuScene = GameScene.extend({
         if (this.initialized) {
             this.main.Finalize();
         }
+    },
+
+    getScriptFunctions: function() {
+        var that = this;
+        return {
+            // Global functions
+            LoadGraphic: function(file) {
+                that.enemy.setImage(file);
+            },
+
+            SetLife: function(life) {
+                that.enemy.life = life;
+            },
+
+            GetX: function() {
+                return that.enemy.x;
+            },
+
+            GetY: function() {
+                return that.enemy.y;
+            },
+
+            GetPlayerX: function() {
+                return that.player.x;
+            },
+
+            GetPlayerY: function() {
+                return that.player.y;
+            },
+
+            GetCenterX: function() {
+                return that.gameArea.width / 2;
+            },
+
+            GetCenterY: function() {
+                return that.gameArea.height / 2;
+            },
+
+            GetClipMinX: function() {
+                return that.gameArea.x;
+            },
+
+            GetClipMinY: function() {
+                return that.gameArea.y;
+            },
+
+            GetClipMaxX: function() {
+                return that.gameArea.x + that.gameArea.width;
+            },
+
+            GetClipMaxY: function() {
+                return that.gameArea.y + that.gameArea.height;
+            },
+
+            GetTime: function() {
+                return new Date() - that.script.__startTime__;
+            },
+
+            GetFPS: function() {
+                return DanmakuJS.stats.FPS;
+            },
+
+            CreateShot01: function(x, y, speed, angle, image, timeout) {
+                if (!that.enemy.alive) {
+                    return;
+                }
+                setTimeout(function() {
+                    that.add(new Bullet({
+                        x: x, y: y, speed: speed, 
+                        angle: angle + 180, image: image,
+                        owner: that.enemy, life: 10000
+                    }));
+                }, timeout);
+            }
+        };
     }
 });
 
