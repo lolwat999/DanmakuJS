@@ -304,6 +304,11 @@ Translator.prototype = {
 var operations = {
     index: function(left, right) {
         return left + '[' + right + ']';
+    },
+
+    negative: function(value) {
+        console.log(value);
+        return '-' + value;
     }
 };
 

@@ -64,6 +64,10 @@ var DanmakuJS = function() {
         that.renderer.setSize(width, height);
         that.gameStateManager.onResized(width, height);
     };
+
+    this.entityCount = function() {
+        return that.gameStateManager.current().entityCount;
+    };
 };
 
 this.DanmakuJS = new DanmakuJS();

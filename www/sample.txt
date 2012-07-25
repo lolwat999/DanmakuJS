@@ -48,8 +48,10 @@ script_enemy_main {
         Obj_SetSpeed(obj, v);
         ObjShot_SetGraphic(obj, BLUE01);
         ObjShot_SetDelay(obj, 0);
-        while(Obj_BeDeleted(obj) == false) {
-            Obj_SetSpeed(obj, Obj_GetSpeed(obj) - 0.1);
+        let speed = Obj_GetSpeed(obj);
+        while(Obj_BeDeleted(obj) == false && speed > -5) {
+            speed -= 0.1;
+            Obj_SetSpeed(obj, speed);
             yield;
         }
     }
