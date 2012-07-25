@@ -10,7 +10,7 @@ var GameState = Class.extend({
         this.paused = false;
         this.frame = 0;
         this.gridSpace = 200;
-        this.renderSkip = 2 // skip every other frame (render at 30fps for now)
+        this.renderSkip = 1;
         this.entityCount = {};
     },
 
