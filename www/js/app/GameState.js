@@ -10,6 +10,7 @@ var GameState = Class.extend({
         this.paused = false;
         this.frame = 0;
         this.gridSpace = 200;
+        this.renderSkip = 2 // skip every other frame (render at 30fps for now)
         this.entityCount = {};
     },
 
@@ -52,14 +53,16 @@ var GameState = Class.extend({
     },
     
     renderAll: function(renderer) {
-        if (this.background) {
-            this.background.renderAll(renderer);
-        }
-        if (this.render) {
-            this.render(renderer);
-        }
-        if (this.foreground) {
-            this.foreground.renderAll(renderer);
+        if (!(this.frame % this.renderSkip)) {
+            if (this.background) {
+                this.background.renderAll(renderer);
+            }
+            if (this.render) {
+                this.render(renderer);
+            }
+            if (this.foreground) {
+                this.foreground.renderAll(renderer);
+            }
         }
     },
 
