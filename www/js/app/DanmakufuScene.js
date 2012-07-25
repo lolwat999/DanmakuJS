@@ -68,6 +68,16 @@ var DanmakufuScene = GameScene.extend({
     
     update: function(delta) {
         if (this.initialized) {
+            var tasks = this.script.__tasks__;
+            for (var i=0, length=tasks.length; i<length; ++i) {
+                var task = tasks[i];
+                if (task.next()) {
+                    tasks.splice(i, 1);
+                    --i;
+                    --length;
+                    task.close();
+                }
+            }
             this.main.MainLoop();
             this._super(delta);
         }
@@ -183,6 +193,20 @@ var DanmakufuScene = GameScene.extend({
                 }
             },
 
+            Obj_SetX: function(obj, x) {
+                obj = that.entities[obj];
+                if (obj) {
+                    obj.x = x;
+                }
+            },
+
+            Obj_SetY: function(obj, y) {
+                obj = that.entities[obj];
+                if (obj) {
+                    obj.y = y;
+                }
+            },
+
             Obj_SetAngle: function(obj, angle) {
                 obj = that.entities[obj];
                 if (obj) {
@@ -217,7 +241,7 @@ var DanmakufuScene = GameScene.extend({
 
             Obj_BeDeleted: function(obj) {
                 obj = that.entities[obj];
-                return obj.alive;
+                return !obj || !obj.alive;
             },
 
             Obj_GetX: function(obj) {

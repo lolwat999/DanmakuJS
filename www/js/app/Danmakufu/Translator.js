@@ -12,6 +12,7 @@ var Translator = function(blocks, filename, comments) {
     this.header = 'define(\'danmakufu/' + filename + '\', function(require) {\n' +
                   'var __functions__ = require(\'Functions\');\n' +
                   'var Container = {};\n' +
+                  'Container.__tasks__ = []\n' +
                   'Container.__comments__ = ' + JSON.stringify(comments) + ';\n';
     this.footer = 'return Container;\n});';
     this.variables = [];
@@ -120,6 +121,8 @@ Translator.prototype = {
             return ' break;\n'
         } else if (block.kind === 'loop') {
             return '}\n';
+        } else if (block.kind === 'microthread') {
+            return 'yield true;\n};\n';
         } else {
             return '};\n';
         }
@@ -132,6 +135,10 @@ Translator.prototype = {
     let: function(block, code) {
         code.noSemicolon = true;
         return 'let ';
+    },
+
+    yield: function(block, code) {
+        return 'yield';
     },
 
     assign: function(block, code) {
@@ -163,7 +170,11 @@ Translator.prototype = {
             for (var i=0, length=code.args; i<length; ++i) {
                 args.unshift(this.variables.pop());
             }
-            return functionCall + '(' + args.join(',') + ')';
+            var statement = functionCall + '(' + args.join(',') + ')';
+            if (code.value.kind === 'microthread') {
+                statement = statement + ';\nContainer.__tasks__.push(' + statement + ')';
+            }
+            return statement;
         }
         return '';
     },

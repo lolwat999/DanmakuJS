@@ -9,6 +9,8 @@ var Globals = function(options) {
         // Global Functions
         print: console.log.bind(console),
 
+        alert: alert,
+
         rand: function(low, high) {
             low = low || 0;
             high = high || 1;

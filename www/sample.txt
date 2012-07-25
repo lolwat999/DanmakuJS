@@ -48,6 +48,10 @@ script_enemy_main {
         Obj_SetSpeed(obj, v);
         ObjShot_SetGraphic(obj, BLUE01);
         ObjShot_SetDelay(obj, 0);
+        while(Obj_BeDeleted(obj) == false) {
+            Obj_SetSpeed(obj, Obj_GetSpeed(obj) - 0.1);
+            yield;
+        }
     }
 }
 
