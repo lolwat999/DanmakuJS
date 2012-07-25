@@ -22,8 +22,6 @@ var GameState = Class.extend({
             entity.update(delta);
             if (!entity.alive) {
                 this.remove(entity);
-                iMax = entities.length;
-                --i;
             } else {
                 if (entity.x && entity.y) {
                     var location = this.getGridLocation(entity);
