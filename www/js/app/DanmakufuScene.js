@@ -15,8 +15,6 @@ var DanmakufuScene = GameScene.extend({
     init: function(core, file) {
         this._super(core);
         var that = this;
-        this.objectsByID = {};
-        this.idCount = 0;
         this.enemy = this.addEnemy();
         this.player = this.addPlayer();
         this.foreground = new OverlayState(core);
@@ -64,7 +62,7 @@ var DanmakufuScene = GameScene.extend({
     remove: function(entity) {
         this._super(entity);
         if (entity.id) {
-            delete this.objectsByID[entity.id];
+            delete this.entities[entity.id];
         }
     },
     
@@ -174,34 +172,40 @@ var DanmakufuScene = GameScene.extend({
                 if (that.enemy.alive) {
                     that.add(entity);
                 }
-                var id = entity.id = ++that.idCount;
-                that.objectsByID[id] = entity;
-                return id;
+                return entity.id;
             },
 
             Obj_SetPosition: function(obj, x, y) {
-                obj = that.objectsByID[obj];
-                obj.x = x;
-                obj.y = y;
+                obj = that.entities[obj];
+                if (obj) {
+                    obj.x = x;
+                    obj.y = y;
+                }
             },
 
             Obj_SetAngle: function(obj, angle) {
-                obj = that.objectsByID[obj];
-                obj.angle = angle;
+                obj = that.entities[obj];
+                if (obj) {
+                    obj.angle = angle;
+                }
             },
 
             Obj_SetSpeed: function(obj, v) {
-                obj = that.objectsByID[obj];
-                obj.speed = v;
+                obj = that.entities[obj];
+                if (obj) {
+                    obj.speed = v;
+                }
             },
 
             ObjShot_SetGraphic: function(obj, image) {
-                obj = that.objectsByID[obj];
-                obj.setImage(image);
+                obj = that.entities[obj];
+                if (obj) {
+                   obj.setImage(image);
+                }
             },
 
             ObjShot_SetDelay: function(obj, delay) {
-                obj = that.objectsByID[obj];
+                obj = that.entities[obj];
                 if (obj) {
                     obj.delay = 0;
                     if (delay > 0 && obj.model) {
@@ -212,8 +216,28 @@ var DanmakufuScene = GameScene.extend({
             },
 
             Obj_BeDeleted: function(obj) {
-                obj = that.objectsByID[obj];
+                obj = that.entities[obj];
                 return obj.alive;
+            },
+
+            Obj_GetX: function(obj) {
+                obj = that.entities[obj];
+                return obj.x;
+            },
+
+            Obj_GetY: function(obj) {
+                obj = that.entities[obj];
+                return obj.y;
+            },
+
+            Obj_GetSpeed: function(obj) {
+                obj = that.entities[obj];
+                return obj.speed;
+            },
+
+            Obj_GetAngle: function(obj) {
+                obj = that.entities[obj];
+                return obj.angle;
             }
         };
     }

@@ -131,7 +131,7 @@ Translator.prototype = {
 
     let: function(block, code) {
         code.noSemicolon = true;
-        return 'var ';
+        return 'let ';
     },
 
     assign: function(block, code) {

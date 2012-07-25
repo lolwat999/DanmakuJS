@@ -20,6 +20,7 @@ Danmakufu.prototype = {
     execute: function(onload) {
         var head = document.getElementsByTagName('head')[0],
         script = document.createElement('script');
+        script.type = "application/javascript;version=1.8";
         script.textContent = this.translator.result;
         head.appendChild(script);
         require([ 'danmakufu/' + this.filename ], function(module) {

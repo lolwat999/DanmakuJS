@@ -61,7 +61,7 @@ var GameScene = GameState.extend({
     },
     
     render: function(renderer) {
-        for (var i=0, iMax = this.entities.length; i<iMax; ++i) {
+        for (var i in this.entities) {
             var entity = this.entities[i];
             if (entity.model) {
                 entity.model.visible = !entity.outOfBounds(0, -4);

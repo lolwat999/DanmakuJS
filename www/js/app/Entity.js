@@ -3,12 +3,15 @@ define(function(require) {
 var THREE = require('lib/Three');
 var Tasks = require('./Tasks');
 
+var idCount = 0;
+
 var Entity = Class.extend({
     family: 'entity',
 
     type: 'entity',
 
     init: function(options) {
+        this.id = idCount++;
         this.set(options);
         this.events = {};
     },

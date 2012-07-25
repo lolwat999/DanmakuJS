@@ -5,7 +5,8 @@ var GameState = Class.extend({
         this.core = core;
         this.background = background || null;
         this.foreground = foreground || null;
-        this.entities = [];
+        this.entities = {};
+        this.idCount = 0;
         this.paused = false;
         this.frame = 0;
         this.gridSpace = 200;
@@ -15,9 +16,8 @@ var GameState = Class.extend({
     update: function(delta) {
         ++this.frame;
         var entity, entities = this.entities;
-        var entitiesToRemove = [];
-        this.entitiesByGrid = [];
-        for (var i=0, iMax = entities.length; i<iMax; ++i) {
+        this.entitiesByGrid = {};
+        for (var i in this.entities) {
             entity = entities[i];
             entity.update(delta);
             if (!entity.alive) {
@@ -69,20 +69,19 @@ var GameState = Class.extend({
         entity.state = this;
         this.entityCount[entity.type] = this.entityCount[entity.type] || 0;
         ++this.entityCount[entity.type];
-        this.entities.push(entity);
+        this.entities[entity.id] = entity;
     },
 
     remove: function(entity) {
-        var location = this.entities.indexOf(entity);
         entity.state = null;
-        if (location !== -1) {
+        if (this.entities[entity.id]) {
             --this.entityCount[entity.type];
-            this.entities.splice(location, 1);
+            delete this.entities[entity.id];
         }
     },
 
     clear: function() {
-        this.entities = [];
+        this.entities = {};
     },
 
     getSize: function() {
