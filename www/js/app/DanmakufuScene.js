@@ -246,22 +246,22 @@ var DanmakufuScene = GameScene.extend({
 
             Obj_GetX: function(obj) {
                 obj = that.entities[obj];
-                return obj.x;
+                return obj ? obj.x : 0;
             },
 
             Obj_GetY: function(obj) {
                 obj = that.entities[obj];
-                return obj.y;
+                return obj ? obj.y : 0;
             },
 
             Obj_GetSpeed: function(obj) {
                 obj = that.entities[obj];
-                return obj.speed;
+                return obj ? obj.speed : 0;
             },
 
             Obj_GetAngle: function(obj) {
                 obj = that.entities[obj];
-                return obj.angle;
+                return obj ? obj.angle : 0;
             }
         };
     }

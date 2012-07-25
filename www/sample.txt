@@ -18,7 +18,7 @@ script_enemy_main {
 
     @MainLoop {
         CreateShot01(GetX, GetY, 10, rand(0, 360), RED01, 10);
-        if (frame % 10 == 0) {
+        if (frame % 5 == 0) {
             let high = 10;
             ascent (i in 0..10) {
                 let ang = (angleMax / high) * i + frame;
