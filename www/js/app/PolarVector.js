@@ -16,7 +16,7 @@ PolarVector.fromCart = function(x, y) {
         y = x.y;
         x = x.x;
     }
-    return new PolarVector((Math.sqrt((y*y)+(x*x)), Math.atan2(y,x)));
+    return new PolarVector(Math.sqrt((y*y)+(x*x)), Math.atan2(y,x));
 };
 
 PolarVector.toCart = function(radius, angle) {

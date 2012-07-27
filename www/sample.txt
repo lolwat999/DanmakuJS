@@ -19,7 +19,11 @@ script_enemy_main {
     }
 
     @MainLoop {
-        CreateShot01(GetX, GetY, 10, rand(0, 360), RED01, 10);
+        //SetMovePosition01(GetPlayerX, GetPlayerY, 3);
+        let ang2 = rand(-10, 10);
+        if (frame % 2 == 0) {
+            CreateShot01(GetX, GetY, 10, GetAngleToPlayer + rand(-30, 30), RED01, 10);
+        }
         if (frame % 10 == 0) {
             let high = 10;
             ascent (i in 0..10) {

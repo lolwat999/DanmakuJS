@@ -2,6 +2,7 @@ define(function(require) {
 
 var THREE = require('lib/Three');
 var Tasks = require('./Tasks');
+var PolarVector = require('./PolarVector');
 
 var idCount = 0;
 
@@ -193,6 +194,29 @@ var Entity = Class.extend({
             return !(x > right2 ||y > bottom2 || right < x2 || bottom < y2);
         }
         return false;
+    },
+
+    moveTowards: function(x, y, speed) {
+        var difX = Math.abs(x - this.x), difY = Math.abs(y - this.y);
+        if (difX >= speed * 2 || difY >= speed * 2) {
+            var angle =  Math.PI - Math.atan2(this.y - y, this.x - x);
+            if (this.speedType === Entity.speedTypes.CARTESIAN) {
+                var nextVelocity = PolarVector.toCart(speed, angle);
+                this.xSpeed = nextVelocity.x;
+                this.ySpeed = nextVelocity.y;
+            } else {
+                this.speed = speed;
+                this.angle = angle * (180 / Math.PI);
+            }
+        } else { 
+            this.xSpeed = 0;
+            this.ySpeed = 0;
+            this.speed = 0;
+        }
+    },
+
+    getAngleFrom: function(x, y) {
+        return  90 - (Math.atan2(this.y - y, this.x - x) * (180 / Math.PI));
     }
 });
 

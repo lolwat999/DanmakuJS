@@ -262,6 +262,17 @@ var DanmakufuScene = GameScene.extend({
             Obj_GetAngle: function(obj) {
                 obj = that.entities[obj];
                 return obj ? obj.angle : 0;
+            },
+
+            SetMovePosition01: function(x, y, speed) {
+                if (that.enemy.alive) {
+                    that.enemy.moveTowards(x, y, speed);
+                }
+            },
+
+            GetAngleToPlayer: function() {
+                var player = that.player;
+                return that.enemy.getAngleFrom(player.x, player.y);
             }
         };
     }

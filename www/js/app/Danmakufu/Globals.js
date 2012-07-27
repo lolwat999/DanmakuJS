@@ -14,13 +14,13 @@ var Globals = function(options) {
         rand: function(low, high) {
             low = low || 0;
             high = high || 1;
-            return Math.random() * (high - low) - low;
+            return (Math.random() * (high - low)) - ((high - low) / 2);
         },
 
         rand_int: function(low, high) {
             low = low || 0;
             high = high || 1;
-            return parseInt(Math.random() * (high - low) - low);
+            return parseInt(Math.random() * (high - low)) - ((high - low) / 2);
         },
 
         ToString: function(param) {
