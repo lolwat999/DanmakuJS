@@ -34,6 +34,11 @@ var Bullet = Entity.extend({
         }
     },
 
+    setImage: function(image, color) {
+        image = imageTypes[image] || image;
+        this._super(image, color);
+    },
+
     expired: function() {
         return (this.time > this.life);
     },
@@ -80,6 +85,15 @@ var Bullet = Entity.extend({
             this.type + ':' + this.owner.type : this.type;
     }
 });
+
+var imageTypes = {
+    0: 'bullets/circleredsm.png',
+    1: 'bullets/circlebluesm.png',
+};
+
+for (var i=2; i<1000; ++i) {
+    imageTypes[i] = imageTypes[0];
+}
 
 return Bullet;
 

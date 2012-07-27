@@ -34,9 +34,9 @@ var Entity = Class.extend({
         this.ySpeed = options.ySpeed || 0;
         this.x = options.x || 0;
         this.y = options.y || 0;
-        if (options.image && !options.model) {
+        if (!options.model) {
             this.setImage(options.image, options.color);
-        } else if (options.model) {
+        } else {
             this.model = options.model;
         }
         this.alive = true;
@@ -61,22 +61,24 @@ var Entity = Class.extend({
 
     setImage: function(image, color) {
         this.image = image;
-        var map = Entity.imageMapCache.load('img/' + this.image);
-        this.model = new THREE.Sprite({
-            color: color || this.color || 0xFFFFFF, map: map,
-            useScreenCoordinates: false
-        });
-        if (this.blending !== undefined) {
-            this.model.blending = this.blending;
-        }
-        var parentX = this.parent ? this.parent.x : 0;
-        var parentY = this.parent ? this.parent.y : 0;
-        this.model.position.x = this.x + parentX;
-        this.model.position.y = this.y + parentY;
-        var state = this.state;
-        if (state) {
-            state.remove(this);
-            state.add(this);
+        if (image) {
+            var map = Entity.imageMapCache.load('img/' + this.image);
+            this.model = new THREE.Sprite({
+                color: color || this.color || 0xFFFFFF, map: map,
+                useScreenCoordinates: false
+            });
+            if (this.blending !== undefined) {
+                this.model.blending = this.blending;
+            }
+            var parentX = this.parent ? this.parent.x : 0;
+            var parentY = this.parent ? this.parent.y : 0;
+            this.model.position.x = this.x + parentX;
+            this.model.position.y = this.y + parentY;
+            var state = this.state;
+            if (state) {
+                state.remove(this);
+                state.add(this);
+            }    
         }
     },
 

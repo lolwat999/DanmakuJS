@@ -1,0 +1,22 @@
+task Bullet(x, y, v, angle) {
+    let obj = Obj_Create(OBJ_SHOT);
+    Obj_SetPosition(obj, x, y);
+    Obj_SetAngle(obj, angle);
+    Obj_SetSpeed(obj, v);
+    ObjShot_SetGraphic(obj, BLUE01);
+    ObjShot_SetDelay(obj, 0);
+    let speed = Obj_GetSpeed(obj);
+    while(Obj_BeDeleted(obj) == false && speed > -5) {
+        speed -= 0.1;
+        Obj_SetSpeed(obj, speed);
+        yield;
+    }
+}
+
+function printStuff(d) {
+    print(d);
+}
+
+function theMeaningOfLife {
+    print(42);
+}

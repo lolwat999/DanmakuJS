@@ -133,8 +133,12 @@ Parser.prototype = {
     registerFunction: function(func) {
         var blocks = this.blocks;
         var symbol = { level: 0, variable: -1 };
-        if (func.constant) {
-            symbol.name = '"' + func.constant + '"';
+        if (func.constant !== undefined) {
+            symbol.name = func.name;
+            symbol.value = func.constant;
+            if (typeof symbol.value === 'string') {
+                symbol.value = '"' + symbol.value + '"';
+            }
         } else if (func.func) {
             symbol.sub = newBlock(blocks, 0, 'function');
             symbol.sub.func = func.func;
@@ -214,6 +218,7 @@ Parser.prototype = {
             scanner.advance();
         } else if (scanner.next === 'word') {
             var symbol = this.search(scanner.word);
+            var word = scanner.word;
             if (!symbol) {
                 throw parserError(scanner, 'Symbol not found: ' + scanner.word);
             }
@@ -233,12 +238,21 @@ Parser.prototype = {
                     type: 'callAndPushResult'
                 });
             } else {
-                block.codes.push({
-                    line: scanner.line,
-                    level: symbol.level,
-                    variable: symbol.name,
-                    type: 'pushVariable'
-                });
+                if (symbol.value !== undefined) {
+                    block.codes.push({
+                        line: scanner.line,
+                        level: symbol.level,
+                        value: symbol.value,
+                        type: 'pushValue'
+                    });
+                } else {
+                    block.codes.push({
+                        line: scanner.line,
+                        level: symbol.level,
+                        variable: symbol.name,
+                        type: 'pushVariable'
+                    });
+                }
             }
         } else if (scanner.next === 'openBracket') {
             scanner.advance();
@@ -657,7 +671,10 @@ Parser.prototype = {
                 this.parseBlock(symbol.sub, args, symbol.sub.kind === 'function');
                 needSemicolon = false;
             } else if (scanner.next === 'comment') {
-                this.comments.push(scanner.word);
+                var comment = { line: scanner.line, type: 'comment', originalComment: scanner.word };
+                this.parseComment(comment);
+                this.comments.push(comment);
+                block.codes.push(comment);
                 scanner.advance();
                 needSemicolon = false;
             }
@@ -668,6 +685,21 @@ Parser.prototype = {
                 scanner.advance();
             }
         };
+    },
+
+    parseComment: function(comment) {
+        var fileString = comment.originalComment;
+        var content = fileString.trim();
+        var descLocation = content.indexOf('[') + 1;
+        var title = content;
+        var description = '';
+        if (descLocation) {
+            title = content.substring(0, descLocation - 1);
+            description = content.substring(descLocation, content.length - 1);
+        }
+        comment.title = title;
+        comment.description = description;
+        return comment;
     },
 
     parseInlineBlock: function(block, blockKind) {

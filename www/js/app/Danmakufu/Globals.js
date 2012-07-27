@@ -59,9 +59,11 @@ var Globals = function(options) {
             return that.directory;
         },
 
+        // Image enums
+        RED01: 0,
+        BLUE01: 1,
+
         // Constants
-        RED01: 'bullets/circleredsm.png',
-        BLUE01: 'bullets/circlebluesm.png',
         OBJ_SHOT: 'Bullet'
     };
 

@@ -5,6 +5,7 @@ var TokenKind = require('./TokenKind');
 var Scanner = function(options) {
     options = options || {};
     var source = typeof options === 'string' ? options : options.source;
+    source = source.replace(/(\/\*[\s\S]*?\*\/|\/\/[\s\S]*?\n)/g, ''); // Remove comments
     this.currentLine = null;
     this.line = options.line || 1;
     this.current = options.current || 0;

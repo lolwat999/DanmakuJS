@@ -10,6 +10,8 @@ var Danmakufu = function(fileString, filename, functions) {
     var dir = loc.substring(loc.lastIndexOf('/'));
 
     this.filename = filename;
+    fileString = this.addIncludes(fileString);
+
     this.globals = new Globals({ directory: dir });
     functions = extend([ this.globals.functions, functions ]);
     this.engine = new ScriptEngine(fileString, this.globals.toSymbols(functions));
@@ -26,21 +28,47 @@ Danmakufu.prototype = {
         require([ 'danmakufu/' + this.filename ], function(module) {
             onload(module);
         });
+    },
+
+    addIncludes: function(fileString) {
+        var lines = fileString.split('\n');
+        _.each(lines, function(line, lineNumber) {
+            var titleID = '#include_function';
+            var location = line.indexOf(titleID);
+            if (location !== -1) {
+                var startLocation = line.indexOf('"', location + 1), 
+                    endLocation = line.indexOf('"', startLocation + 1);
+                if (startLocation !== -1 && endLocation !== -1) {
+                    var path = line.substring(startLocation + 1, endLocation).trim();
+                    lines[lineNumber] = getFile(path);
+                }
+            }
+        }, this);
+        return lines.join('\n');
     }
 };
 
 Danmakufu.loadFile = function(path, functions) {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open('GET', path, false);
-    xmlHttp.send(null);
-    if (xmlHttp.status === 200 || xmlHttp.status === 0) {
+    var response = getFile(path);
+    if (response) {
         var dotIndex = path.lastIndexOf('.');
         if (dotIndex === -1) {
             dotIndex = path.length;
         }
-        return new Danmakufu(xmlHttp.responseText, path.substr(0, dotIndex), functions);
+        return new Danmakufu(response, path.substr(0, dotIndex), functions);
     }
     return null;
+};
+
+var getFile = function(path) {
+    var xmlHttp = new XMLHttpRequest();
+    var response = '';
+    xmlHttp.open('GET', path, false);
+    xmlHttp.send(null);
+    if (xmlHttp.status === 200 || xmlHttp.status === 0) {
+        response = xmlHttp.responseText;
+    }
+    return response;
 };
 
 var extend = function(objects) {

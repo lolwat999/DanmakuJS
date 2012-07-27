@@ -269,7 +269,7 @@ Translator.prototype = {
         } else {
             id = '__i';
         }
-        var declare = 'var ' + id + ' = ' + start ;
+        var declare = 'let ' + id + ' = ' + start ;
         return 'for (' + declare + '; ' + id + compare + end + '; ' + id + 
             increment + ')' + this.addJSBlock(childBlock);
     },
@@ -298,7 +298,18 @@ Translator.prototype = {
         var str = this.variables.join(',');
         this.variables = [ '[ ' + str + ' ]' ];
         return '';
+    },
+
+    comment: function(block, code) {
+        if (commentTranslators[code.title]) {
+            return commentTranslators[code.title](block, code);
+        }
+        return '';
     }
+};
+
+var commentTranslators = {
+
 };
 
 var operations = {
@@ -307,7 +318,6 @@ var operations = {
     },
 
     negative: function(value) {
-        console.log(value);
         return '-' + value;
     }
 };
